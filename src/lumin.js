@@ -2,8 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import { classifyMessage } from "./pipeline.js";
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  normalizeSupabaseUrl(process.env.SUPABASE_URL),
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
 );
 
 export const CATEGORIES = [
@@ -82,13 +82,14 @@ export function chooseLowestLoadMember(load, category, members, requestedPerson)
 // Checks if any team member is mentioned in the message, either via Slack @mention
 // format (<@UXXXXXXX>) or by plain display name.
 export function findMentionedTeamMember(text, members) {
-  const slackMentionMatch = text.match(/<@([A-Z0-9]+)>/);
-  if (slackMentionMatch) {
-    const mentionedId = slackMentionMatch[1];
-    return members.find((m) => m.slack_user_id === mentionedId);
+  const slackMentionMatches = [...text.matchAll(/<@([A-Za-z0-9]+)>/g)];
+  for (const match of slackMentionMatches) {
+    const mentionedId = match[1];
+    const member = members.find((m) => m.slack_user_id === mentionedId);
+    if (member) return member;
   }
   return members.find((member) =>
-    new RegExp(`\\b${member.display_name}\\b`, "i").test(text)
+    new RegExp(`\\b${escapeRegExp(member.display_name)}\\b`, "i").test(text)
   );
 }
 
@@ -113,6 +114,10 @@ export function getTeamSummary(load, members) {
   return members
     .map((m) => `${m.display_name}: ${load[m.slack_user_id]?.total || 0}`)
     .join(", ");
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 // Upserts all human Slack workspace members into the team_members table.
@@ -150,4 +155,20 @@ export async function recordAssignment({ messageId, title, category, suggestedTo
     created_at: new Date().toISOString(),
   });
   if (error) throw error;
+}
+
+function normalizeSupabaseUrl(rawUrl) {
+  if (!rawUrl) {
+    throw new Error("SUPABASE_URL is missing from .env");
+  }
+
+  const url = new URL(rawUrl);
+  url.search = "";
+  url.hash = "";
+
+  if (url.pathname.startsWith("/rest/v1")) {
+    url.pathname = "/";
+  }
+
+  return url.toString().replace(/\/$/, "");
 }
