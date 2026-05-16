@@ -22,6 +22,32 @@ npm install
 npm start
 ```
 
+## Backend setup
+
+The backend has been added in `backend/` and uses Supabase for route handling.
+
+1. Create a `backend/.env` or place Supabase keys in the root `.env`.
+2. Install backend dependencies:
+
+```bash
+cd backend
+npm install
+```
+
+3. Start the backend:
+
+```bash
+npm run dev
+```
+
+The backend exposes:
+- `GET /api/health`
+- `GET /api/items`
+- `POST /api/items`
+- `GET /api/profile/:id`
+
+Customize `backend/routes/supabaseRoutes.js` for your app-specific Supabase routes.
+
 Try a message like:
 
 ```text
