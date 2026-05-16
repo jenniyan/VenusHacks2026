@@ -1,0 +1,18 @@
+{
+  "name": "lumin-slack-bot",
+  "version": "0.1.0",
+  "description": "A no-database Slack bot MVP for detecting and rebalancing invisible labor requests.",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.21.2",
+    "dotenv": "^16.4.7"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
