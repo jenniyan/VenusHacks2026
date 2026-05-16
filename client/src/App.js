@@ -8,31 +8,19 @@ import "./pages/UI";
 import "./pages/dashboard/Dashboard";
 import "./pages/team/Team";
 
-const {
-  Dashboard,
-  Team,
-  useTweaks,
-} = window;
-
-const TWEAK_DEFAULTS = window.__TWEAK_DEFAULTS || {
-  theme: "light",
-  density: "regular",
-  tone: "data",
-  imbalanceThreshold: 6,
-  useClaude: false,
-};
-
-window.__TWEAK_DEFAULTS = TWEAK_DEFAULTS;
+const { Dashboard, Team } = window;
+const THEME = "light";
+const DENSITY = "regular";
+const IMBALANCE_THRESHOLD = 6;
 
 function App() {
-  const [tweaks] = useTweaks(TWEAK_DEFAULTS);
   const [route, setRoute] = useState("dashboard");
   const [extraTasks] = useState([]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = tweaks.theme;
-    document.documentElement.dataset.density = tweaks.density;
-  }, [tweaks.theme, tweaks.density]);
+    document.documentElement.dataset.theme = THEME;
+    document.documentElement.dataset.density = DENSITY;
+  }, []);
 
   const history = useMemo(
     () => [...window.LUMIN.TASK_HISTORY, ...extraTasks],
@@ -43,7 +31,7 @@ function App() {
   const byPerson = loadByPerson(history);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
-    (person) => (byPerson[person.id] || 0) >= tweaks.imbalanceThreshold,
+    (person) => (byPerson[person.id] || 0) >= IMBALANCE_THRESHOLD,
   ).length;
 
   const nav = [
@@ -112,10 +100,10 @@ function App() {
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={tweaks.imbalanceThreshold} />
+            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} />
           )}
           {route === "team" && (
-            <Team history={history} threshold={tweaks.imbalanceThreshold} />
+            <Team history={history} threshold={IMBALANCE_THRESHOLD} />
           )}
         </div>
       </main>
