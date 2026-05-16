@@ -7,12 +7,10 @@ import "./components/data";
 import "./components/UI";
 import "./components/Tweaks";
 import "./components/Dashboard";
-import "./components/Chat";
 import "./components/Team";
 
 const {
   Dashboard,
-  Chat,
   Team,
   TweaksPanel,
   TweakSection,
@@ -65,7 +63,6 @@ function App() {
 
   const nav = [
     { id: "dashboard", label: "Equity console", count: null },
-    { id: "chat", label: "Detection feed", count: openCount },
     { id: "team", label: "Team", count: TEAM.length },
   ];
 
@@ -139,14 +136,6 @@ function App() {
         <div className="content">
           {route === "dashboard" && (
             <Dashboard history={history} threshold={t.imbalanceThreshold} />
-          )}
-          {route === "chat" && (
-            <Chat
-              history={history}
-              onAssign={handleAssign}
-              tone={t.tone}
-              useClaude={t.useClaude}
-            />
           )}
           {route === "team" && (
             <Team history={history} threshold={t.imbalanceThreshold} />
