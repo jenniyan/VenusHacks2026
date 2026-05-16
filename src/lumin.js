@@ -79,20 +79,32 @@ export function chooseLowestLoadMember(load, category, members, requestedPerson)
   })[0];
 }
 
-// Checks if any team member's display name appears in the message text.
+// Checks if any team member is mentioned in the message, either via Slack @mention
+// format (<@UXXXXXXX>) or by plain display name.
 export function findMentionedTeamMember(text, members) {
+  const slackMentionMatch = text.match(/<@([A-Z0-9]+)>/);
+  if (slackMentionMatch) {
+    const mentionedId = slackMentionMatch[1];
+    return members.find((m) => m.slack_user_id === mentionedId);
+  }
   return members.find((member) =>
     new RegExp(`\\b${member.display_name}\\b`, "i").test(text)
   );
 }
 
 // Returns a warning string if the person named in the message has a higher load
-// than the suggested person. Returns empty string if they match or no one was named.
+// than the suggested person. Uses category count if that was the deciding factor,
+// otherwise falls back to total count to match how the suggestion was made.
 export function buildWarning(requestedPerson, suggestedPerson, category, load) {
   if (!requestedPerson) return "";
   if (requestedPerson.slack_user_id === suggestedPerson.slack_user_id) return "";
-  const count = load[requestedPerson.slack_user_id]?.categories[category] || 0;
-  return `${requestedPerson.display_name} has already handled ${count} recent ${category} task(s). `;
+  const requestedCat = load[requestedPerson.slack_user_id]?.categories[category] || 0;
+  const suggestedCat = load[suggestedPerson.slack_user_id]?.categories[category] || 0;
+  if (requestedCat !== suggestedCat) {
+    return `${requestedPerson.display_name} has already handled ${requestedCat} recent ${category} task(s). `;
+  }
+  const requestedTotal = load[requestedPerson.slack_user_id]?.total || 0;
+  return `${requestedPerson.display_name} has already handled ${requestedTotal} total task(s) across all categories. `;
 }
 
 // Formats the team load as a readable string for Slack messages.

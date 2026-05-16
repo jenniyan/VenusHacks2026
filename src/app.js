@@ -44,10 +44,12 @@ app.message(async ({ message, say, client }) => {
     timestamp,
   });
 
-  const responseText =
-    `This looks like a *${analysis.category}* task because ${analysis.explanation}\n\n` +
-    `${warning}` +
-    `Lumin suggests asking *${suggestedPerson.display_name}* next because they currently have the lowest invisible-labor load.`;
+  const isExactMatch = requestedPerson && requestedPerson.slack_user_id === suggestedPerson.slack_user_id;
+  const responseText = isExactMatch
+    ? `This looks like a *${analysis.category}* Non-Promotable Task.`
+    : warning
+      ? `This looks like a *${analysis.category}* Non-Promotable Task.\n\n${warning}Lumin suggests asking *${suggestedPerson.display_name}* instead.`
+      : `This looks like a *${analysis.category}* Non-Promotable Task because ${analysis.explanation}\n\nLumin suggests asking *${suggestedPerson.display_name}* next.`;
 
   await say({
     text: responseText,
