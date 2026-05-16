@@ -2,8 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import { classifyMessage } from "./pipeline.js";
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  normalizeSupabaseUrl(process.env.SUPABASE_URL),
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
 );
 
 export const CATEGORIES = [
@@ -138,4 +138,20 @@ export async function recordAssignment({ messageId, title, category, suggestedTo
     created_at: new Date().toISOString(),
   });
   if (error) throw error;
+}
+
+function normalizeSupabaseUrl(rawUrl) {
+  if (!rawUrl) {
+    throw new Error("SUPABASE_URL is missing from .env");
+  }
+
+  const url = new URL(rawUrl);
+  url.search = "";
+  url.hash = "";
+
+  if (url.pathname.startsWith("/rest/v1")) {
+    url.pathname = "/";
+  }
+
+  return url.toString().replace(/\/$/, "");
 }
