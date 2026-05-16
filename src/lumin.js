@@ -60,15 +60,22 @@ export async function getTeamLoad() {
 }
 
 // Returns the team member with the fewest tasks in the given category.
-// Breaks ties using total task count. Returns undefined if members is empty.
-export function chooseLowestLoadMember(load, category, members) {
+// Breaks ties using total task count. If still tied, prefers requestedPerson
+// so the bot only redirects when there is a genuine imbalance.
+export function chooseLowestLoadMember(load, category, members, requestedPerson) {
   if (members.length === 0) return undefined;
   return [...members].sort((a, b) => {
     const catDiff =
       (load[a.slack_user_id]?.categories[category] || 0) -
       (load[b.slack_user_id]?.categories[category] || 0);
     if (catDiff !== 0) return catDiff;
-    return (load[a.slack_user_id]?.total || 0) - (load[b.slack_user_id]?.total || 0);
+    const totalDiff = (load[a.slack_user_id]?.total || 0) - (load[b.slack_user_id]?.total || 0);
+    if (totalDiff !== 0) return totalDiff;
+    if (requestedPerson) {
+      if (a.slack_user_id === requestedPerson.slack_user_id) return -1;
+      if (b.slack_user_id === requestedPerson.slack_user_id) return 1;
+    }
+    return 0;
   })[0];
 }
 
@@ -110,10 +117,10 @@ export async function syncTeamMembers(slackMembers) {
 }
 
 // Inserts a flagged Slack message into the messages table and returns its id.
-export async function insertMessage({ sender, channel, timestamp }) {
+export async function insertMessage({ sender, channel, text, timestamp }) {
   const { data, error } = await supabase
     .from("messages")
-    .insert({ sender, channel, timestamp })
+    .insert({ sender, channel, message: text, timestamp })
     .select("id")
     .single();
   if (error) throw error;

@@ -20,8 +20,8 @@ const app = new App({
   socketMode: true,
 });
 
-// Listens to all plain user messages, classifies them, and posts a suggestion if an NPT is detected.
-app.message(async ({ message, say }) => {
+// Listens to all plain user messages, classifies them, and sends a private suggestion to the sender.
+app.message(async ({ message, say, client }) => {
   if (!message.text || message.subtype) return;
 
   const analysis = await analyzeMessage(message.text);
@@ -30,16 +30,17 @@ app.message(async ({ message, say }) => {
   const { load, members } = await getTeamLoad();
   if (members.length === 0) return;
 
-  const suggestedPerson = chooseLowestLoadMember(load, analysis.category, members);
+  const requestedPerson = findMentionedTeamMember(message.text, members);
+  const suggestedPerson = chooseLowestLoadMember(load, analysis.category, members, requestedPerson);
   if (!suggestedPerson) return;
 
-  const requestedPerson = findMentionedTeamMember(message.text, members);
   const warning = buildWarning(requestedPerson, suggestedPerson, analysis.category, load);
 
   const timestamp = new Date(parseFloat(message.ts) * 1000).toISOString();
   const messageId = await insertMessage({
     sender: message.user,
     channel: message.channel,
+    text: message.text,
     timestamp,
   });
 
@@ -99,6 +100,11 @@ app.message(async ({ message, say }) => {
       },
     ],
   });
+});
+
+// Adds a newly joined workspace member to team_members without requiring a restart.
+app.event("team_join", async ({ event }) => {
+  await syncTeamMembers([event.user]);
 });
 
 // Handles the assign button click, writes the task to the DB, and posts a confirmation.
