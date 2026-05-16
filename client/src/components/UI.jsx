@@ -112,9 +112,11 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
             const el = (
               <div
                 key={cat.id}
+                className="bar-seg"
                 style={{
                   width: `${segPct}%`,
-                  background: window.LUMIN.CATEGORY_COLOR[cat.id],
+                  height: "100%",
+                  backgroundColor: window.LUMIN.CATEGORY_COLOR[cat.id],
                 }}
                 title={`${cat.label}: ${v}`}
               />
