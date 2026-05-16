@@ -1,117 +1,134 @@
-const TEAM = [
-  { name: "Sarah", tasks: 4, categories: { "social planning": 2, "meeting notes": 1, onboarding: 1 } },
-  { name: "Alex", tasks: 0, categories: {} },
-  { name: "Daniel", tasks: 0, categories: {} },
-  { name: "Maya", tasks: 2, categories: { "meeting notes": 2 } },
-  { name: "Chris", tasks: 1, categories: { scheduling: 1 } }
+import { createClient } from "@supabase/supabase-js";
+import { classifyMessage } from "./pipeline.js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+export const CATEGORIES = [
+  { slug: "notes", label: "Meeting notes" },
+  { slug: "scheduling", label: "Scheduling" },
+  { slug: "onboarding", label: "Onboarding" },
+  { slug: "mentoring", label: "Mentoring" },
+  { slug: "social", label: "Social planning" },
+  { slug: "coordination", label: "Team coordination" },
+  { slug: "recognition", label: "Recognition & morale" },
+  { slug: "culture_admin", label: "Culture / admin" },
+  { slug: "interviewing", label: "Interviewing volume" },
+  { slug: "docs_housekeeping", label: "Docs housekeeping" },
+  { slug: "support_triage", label: "Support triage" },
+  { slug: "other", label: "Other" },
 ];
 
-const CATEGORY_RULES = [
-  {
-    category: "meeting notes",
-    title: "take meeting notes",
-    patterns: [/take\s+notes?/i, /meeting\s+notes?/i, /notes?\s+again/i],
-    explanation: "it asks someone to take notes, which is often recurring team support work."
-  },
-  {
-    category: "social planning",
-    title: "plan a team social",
-    patterns: [/organize/i, /plan/i, /team\s+(lunch|dinner|social)/i, /social/i],
-    explanation: "it asks someone to organize a social or team event, which is often invisible coordination work."
-  },
-  {
-    category: "onboarding",
-    title: "onboard a teammate",
-    patterns: [/onboard/i, /new\s+(intern|hire|member|teammate)/i],
-    explanation: "it asks someone to onboard another person, which is valuable but often under-recognized support work."
-  },
-  {
-    category: "scheduling",
-    title: "schedule a meeting",
-    patterns: [/schedule/i, /calendar/i, /set\s+up\s+(the\s+)?(next\s+)?meeting/i],
-    explanation: "it asks someone to handle scheduling, which is team coordination labor."
-  },
-  {
-    category: "mentoring",
-    title: "mentor or support someone",
-    patterns: [/mentor/i, /coach/i, /help\s+(the\s+)?new/i],
-    explanation: "it asks for mentoring or support labor that can become unevenly distributed."
-  }
-];
+// Sends message text to the LLM pipeline and returns the classification result.
+export async function analyzeMessage(text) {
+  return classifyMessage(text, CATEGORIES);
+}
 
-export function analyzeMessage(text) {
-  const cleanText = text || "";
-  const matchedRule = CATEGORY_RULES.find((rule) =>
-    rule.patterns.some((pattern) => pattern.test(cleanText))
-  );
+// Fetches all team members and their task counts from the DB in a single call.
+// Returns { members, load } where load is keyed by slack_user_id.
+// Members with zero tasks are included with zeroed counts.
+export async function getTeamLoad() {
+  const [membersResult, tasksResult] = await Promise.all([
+    supabase.from("team_members").select("slack_user_id, display_name"),
+    supabase.from("tasks").select("assigned_to, category"),
+  ]);
 
-  if (!matchedRule) {
-    return {
-      isNpt: false,
-      response: "I did not detect an invisible-labor request in that message."
+  if (membersResult.error) throw membersResult.error;
+  if (tasksResult.error) throw tasksResult.error;
+
+  const members = membersResult.data;
+  const load = {};
+
+  for (const member of members) {
+    load[member.slack_user_id] = {
+      display_name: member.display_name,
+      total: 0,
+      categories: {},
     };
   }
 
-  const requestedPerson = findMentionedTeamMember(cleanText);
-  const suggestedPerson = chooseLowestLoadMember(matchedRule.category);
-  const warning = buildWarning(requestedPerson, suggestedPerson, matchedRule.category);
-
-  return {
-    isNpt: true,
-    category: matchedRule.category,
-    taskTitle: matchedRule.title,
-    requestedPerson,
-    suggestedPerson,
-    response:
-      `This looks like a ${matchedRule.category} task because ${matchedRule.explanation}\n\n` +
-      `${warning}` +
-      `Lumin suggests asking *${suggestedPerson.name}* next because they currently have the lowest invisible-labor load.`
-  };
-}
-
-export function recordAssignment(memberName, category) {
-  const member = TEAM.find((person) => sameName(person.name, memberName));
-  if (!member) {
-    return null;
+  for (const task of tasksResult.data) {
+    if (!load[task.assigned_to]) continue;
+    load[task.assigned_to].total += 1;
+    load[task.assigned_to].categories[task.category] =
+      (load[task.assigned_to].categories[task.category] || 0) + 1;
   }
 
-  member.tasks += 1;
-  member.categories[category] = (member.categories[category] || 0) + 1;
-  return member;
+  return { members, load };
 }
 
-export function getTeamSummary() {
-  return TEAM.map((person) => `${person.name}: ${person.tasks}`).join(", ");
-}
-
-function chooseLowestLoadMember(category) {
-  return [...TEAM].sort((a, b) => {
-    const categoryDiff = (a.categories[category] || 0) - (b.categories[category] || 0);
-    if (categoryDiff !== 0) {
-      return categoryDiff;
-    }
-
-    return a.tasks - b.tasks;
+// Returns the team member with the fewest tasks in the given category.
+// Breaks ties using total task count. Returns undefined if members is empty.
+export function chooseLowestLoadMember(load, category, members) {
+  if (members.length === 0) return undefined;
+  return [...members].sort((a, b) => {
+    const catDiff =
+      (load[a.slack_user_id]?.categories[category] || 0) -
+      (load[b.slack_user_id]?.categories[category] || 0);
+    if (catDiff !== 0) return catDiff;
+    return (load[a.slack_user_id]?.total || 0) - (load[b.slack_user_id]?.total || 0);
   })[0];
 }
 
-function findMentionedTeamMember(text) {
-  return TEAM.find((person) => new RegExp(`\\b${person.name}\\b`, "i").test(text));
+// Checks if any team member's display name appears in the message text.
+export function findMentionedTeamMember(text, members) {
+  return members.find((member) =>
+    new RegExp(`\\b${member.display_name}\\b`, "i").test(text)
+  );
 }
 
-function buildWarning(requestedPerson, suggestedPerson, category) {
-  if (!requestedPerson) {
-    return "";
-  }
-
-  if (sameName(requestedPerson.name, suggestedPerson.name)) {
-    return `${requestedPerson.name} is already the lowest-load person for this category. `;
-  }
-
-  const categoryCount = requestedPerson.categories[category] || 0;
-  return `${requestedPerson.name} has already handled ${categoryCount} recent ${category} task(s). `;
+// Returns a warning string if the person named in the message has a higher load
+// than the suggested person. Returns empty string if they match or no one was named.
+export function buildWarning(requestedPerson, suggestedPerson, category, load) {
+  if (!requestedPerson) return "";
+  if (requestedPerson.slack_user_id === suggestedPerson.slack_user_id) return "";
+  const count = load[requestedPerson.slack_user_id]?.categories[category] || 0;
+  return `${requestedPerson.display_name} has already handled ${count} recent ${category} task(s). `;
 }
 
-function sameName(a, b) {
-  return a.toLowerCase() === b.toLowerCase();
+// Formats the team load as a readable string for Slack messages.
+export function getTeamSummary(load, members) {
+  if (members.length === 0) return "No team members found.";
+  return members
+    .map((m) => `${m.display_name}: ${load[m.slack_user_id]?.total || 0}`)
+    .join(", ");
+}
+
+// Upserts all human Slack workspace members into the team_members table.
+export async function syncTeamMembers(slackMembers) {
+  if (slackMembers.length === 0) return;
+  const rows = slackMembers.map((m) => ({
+    slack_user_id: m.id,
+    display_name: m.profile?.display_name_normalized || m.profile?.real_name || m.name,
+  }));
+  const { error } = await supabase
+    .from("team_members")
+    .upsert(rows, { onConflict: "slack_user_id" });
+  if (error) throw error;
+}
+
+// Inserts a flagged Slack message into the messages table and returns its id.
+export async function insertMessage({ sender, channel, timestamp }) {
+  const { data, error } = await supabase
+    .from("messages")
+    .insert({ sender, channel, timestamp })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id;
+}
+
+// Records a completed task assignment in the tasks table.
+export async function recordAssignment({ messageId, title, category, suggestedTo, assignedTo }) {
+  const { error } = await supabase.from("tasks").insert({
+    message_id: messageId,
+    title,
+    category,
+    suggested_to: suggestedTo,
+    assigned_to: assignedTo,
+    created_at: new Date().toISOString(),
+  });
+  if (error) throw error;
 }
