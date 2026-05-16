@@ -123,8 +123,8 @@ app.event("team_join", async ({ event }) => {
   await syncTeamMembers([event.user]);
 });
 
-// Handles the assign button click, writes the task to the DB, and posts a confirmation.
-app.action("assign_suggested", async ({ ack, body, client }) => {
+// Handles the assign button click, writes the task to the DB, and replaces the buttons with a confirmation.
+app.action("assign_suggested", async ({ ack, respond, body }) => {
   await ack();
 
   const { messageId, memberSlackId, memberName, category, taskTitle } = JSON.parse(
@@ -141,15 +141,23 @@ app.action("assign_suggested", async ({ ack, body, client }) => {
 
   const { load, members } = await getTeamLoad();
 
-  await postPrivateConfirmation({
-    client,
-    body,
-    text: `Assigned "${taskTitle}" to ${memberName}. Updated load: ${getTeamSummary(load, members)}`,
+  await respond({
+    replace_original: true,
+    text: `Assigned "${taskTitle}" to ${memberName}.`,
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `✓ Assigned *${taskTitle}* to *${memberName}*.\n\nUpdated load: ${getTeamSummary(load, members)}`,
+        },
+      },
+    ],
   });
 });
 
-// Handles the keep original button — records the task assigned to the originally named person.
-app.action("keep_original", async ({ ack, body, client }) => {
+// Handles the keep original button — records the override and replaces the buttons with a confirmation.
+app.action("keep_original", async ({ ack, respond, body }) => {
   await ack();
 
   const { messageId, assignedSlackId, assignedName, suggestedSlackId, category, taskTitle } =
@@ -165,10 +173,18 @@ app.action("keep_original", async ({ ack, body, client }) => {
 
   const { load, members } = await getTeamLoad();
 
-  await postPrivateConfirmation({
-    client,
-    body,
-    text: `Kept "${taskTitle}" with ${assignedName}. Updated load: ${getTeamSummary(load, members)}`,
+  await respond({
+    replace_original: true,
+    text: `Kept "${taskTitle}" with ${assignedName}.`,
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `✓ Kept *${taskTitle}* with *${assignedName}*.\n\nUpdated load: ${getTeamSummary(load, members)}`,
+        },
+      },
+    ],
   });
 });
 

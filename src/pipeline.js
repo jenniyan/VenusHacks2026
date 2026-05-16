@@ -10,7 +10,7 @@ An NPT is any task that keeps the team running but is not core technical or role
 - Scheduling, booking rooms, polling availability, managing calendars
 - Onboarding new hires, interns, or contractors
 - Mentoring, coaching, or supporting a colleague's growth
-- Planning or organizing team events, lunches, celebrations, office decorations, or posters for events
+- Planning or organizing team events, lunches, celebrations, office decorations, or creative work like making posters, flyers, or signage for team events
 - Team coordination such as tracking OOO, managing rotations, or cross-team logistics
 - Recognition tasks like writing kudos, organizing farewell gifts, or birthday cards
 - Culture and admin work such as DEI committees, ERG participation, or hiring panel duties
@@ -18,7 +18,7 @@ An NPT is any task that keeps the team running but is not core technical or role
 - Docs housekeeping like updating wikis, fixing broken links, or rewriting runbooks
 - Interviewing beyond one's normal share of loops or debriefs
 
-A message is an NPT request if someone is being asked to do any of the above — even if phrased casually or creatively (e.g. "can you make a poster", "who wants to grab lunch reservations", "could someone write up the recap").
+A message is an NPT request if someone is being asked to do any of the above — even if phrased casually, informally, or with slang (e.g. "plz make a poster", "can u grab lunch reservations", "could someone write up the recap", "anyone down to plan the thing").
 
 A message is NOT an NPT if it is casual conversation, a technical question, a code review request, a feature discussion, or work that is clearly part of someone's defined job responsibilities.
 `;
@@ -51,11 +51,13 @@ const CLASSIFY_TOOL = {
 };
 
 // Formats the message and category list into a prompt for Claude.
+// Strips Slack mention tokens (<@UXXXXXXX>) before sending so they don't confuse the model.
 function buildPrompt(text, categories) {
+  const cleanText = text.replace(/<@[A-Z0-9]+>/gi, "").trim();
   const categoryList = categories
     .map((c) => `- ${c.slug}: ${c.label}`)
     .join("\n");
-  return `Categories:\n${categoryList}\n\nMessage: "${text}"`;
+  return `Categories:\n${categoryList}\n\nMessage: "${cleanText}"`;
 }
 
 // Sends the message to Claude with forced tool use and returns the structured classification.
