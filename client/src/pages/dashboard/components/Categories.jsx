@@ -1,4 +1,4 @@
-import { Card } from "../UI";
+import { Card } from "../../UI";
 
 export default function Categories({ byCategory, total, NPT_CATEGORIES, CATEGORY_COLOR }) {
 	return (

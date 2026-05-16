@@ -1,0 +1,40 @@
+// team.jsx — team roster view
+
+import Categories from "./components/Categories";
+import Policy from "./components/Policy";
+import Roster from "./components/Roster";
+
+function Team({ history, threshold }) {
+  const { TEAM, NPT_CATEGORIES, CATEGORY_COLOR, loadByPerson, loadByPersonCategory } = window.LUMIN;
+  const byPerson = loadByPerson(history);
+  const byPC = loadByPersonCategory(history);
+  const max = Math.max(...TEAM.map(p => byPerson[p.id] || 0), 1);
+
+  return (
+    <div className="stack">
+      <div className="page-h">
+        <div>
+          <h1>Team</h1>
+          <div className="sub">
+            8 members · roster used for fair-rotation lookups. Each row shows the member's
+            running NPT load and per-category breakdown for the active window.
+          </div>
+        </div>
+        <div className="right-meta">
+          <div>Members · <b>{TEAM.length}</b></div>
+          <div>Rotation pool · <b>{TEAM.length - 1}</b></div>
+          <div>Threshold · <b>≥ {threshold} flagged</b></div>
+        </div>
+      </div>
+
+      <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
+
+      <div className="grid g-2">
+        <Policy threshold={threshold} />
+        <Categories NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} />
+      </div>
+    </div>
+  );
+}
+
+window.Team = Team;

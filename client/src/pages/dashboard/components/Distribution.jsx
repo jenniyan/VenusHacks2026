@@ -1,4 +1,4 @@
-import { Card, Legend, Pill, StackedBar } from "../UI";
+import { Card, Legend, Pill, StackedBar } from "../../UI";
 
 export default function Distribution({ sorted, byPC, max, threshold }) {
 	return (

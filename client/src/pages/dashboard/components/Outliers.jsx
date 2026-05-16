@@ -1,4 +1,4 @@
-import { Avatar, Card, Pill } from "../UI";
+import { Avatar, Card, Pill } from "../../UI";
 
 export default function Outliers({ top, bottom, byPerson }) {
 	if (!top || !bottom) return null;

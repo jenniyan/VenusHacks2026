@@ -1,11 +1,11 @@
 // dashboard.jsx — equity console main view
 
-import { Card, Stat } from "./UI";
-import Alert from "./dashboard/Alert";
-import Assignments from "./dashboard/Assignments";
-import Categories from "./dashboard/Categories";
-import Distribution from "./dashboard/Distribution";
-import Outliers from "./dashboard/Outliers";
+import { Card, Stat } from "../UI";
+import Alert from "./components/Alert";
+import Assignments from "./components/Assignments";
+import Categories from "./components/Categories";
+import Distribution from "./components/Distribution";
+import Outliers from "./components/Outliers";
 
 function Dashboard({ history, threshold }) {
   const { TEAM, NPT_CATEGORIES, CATEGORY_COLOR, loadByPerson, loadByPersonCategory, gini } = window.LUMIN;

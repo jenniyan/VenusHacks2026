@@ -1,4 +1,4 @@
-import { Card, Pill, Avatar, TEAM_BY_ID, relTime } from "../UI";
+import { Card, Pill, Avatar, TEAM_BY_ID, relTime } from "../../UI";
 
 export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR }) {
 	const recent = [...history].sort((a, b) => a.days - b.days).slice(0, 12);

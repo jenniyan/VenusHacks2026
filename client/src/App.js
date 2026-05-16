@@ -3,11 +3,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import "./App.css";
-import "./components/data";
-import "./components/UI";
-import "./components/Tweaks";
-import "./components/Dashboard";
-import "./components/Team";
+import "./pages/data";
+import "./pages/UI";
+import "./pages/Tweaks";
+import "./pages/dashboard/Dashboard";
+import "./pages/team/Team";
 
 const {
   Dashboard,
