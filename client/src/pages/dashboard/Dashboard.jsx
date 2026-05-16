@@ -69,15 +69,6 @@ function Dashboard({ history, threshold }) {
             delta={<>0 = equal · 1 = max imbalance · target <b>≤ 0.25</b></>}
           />
         </Card>
-        <Card title="Concentration">
-          <Stat
-            value={`${Math.round((byPerson[top.id] / total) * 100)}`}
-            unit="% on top contributor"
-            label=""
-            delta={<><b>{top.name.split(" ")[0]}</b> · {byPerson[top.id]} of {total} tasks</>}
-            deltaKind="up"
-          />
-        </Card>
       </div>
 
       {/* main split: distribution + side facts */}

@@ -5,19 +5,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import "./pages/data";
 import "./pages/UI";
-import "./pages/Tweaks";
 import "./pages/dashboard/Dashboard";
 import "./pages/team/Team";
 
 const {
   Dashboard,
   Team,
-  TweaksPanel,
-  TweakSection,
-  TweakRadio,
-  TweakSelect,
-  TweakSlider,
-  TweakToggle,
   useTweaks,
 } = window;
 
@@ -32,14 +25,14 @@ const TWEAK_DEFAULTS = window.__TWEAK_DEFAULTS || {
 window.__TWEAK_DEFAULTS = TWEAK_DEFAULTS;
 
 function App() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [tweaks] = useTweaks(TWEAK_DEFAULTS);
   const [route, setRoute] = useState("dashboard");
-  const [extraTasks, setExtraTasks] = useState([]);
+  const [extraTasks] = useState([]);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = t.theme;
-    document.documentElement.dataset.density = t.density;
-  }, [t.theme, t.density]);
+    document.documentElement.dataset.theme = tweaks.theme;
+    document.documentElement.dataset.density = tweaks.density;
+  }, [tweaks.theme, tweaks.density]);
 
   const history = useMemo(
     () => [...window.LUMIN.TASK_HISTORY, ...extraTasks],
@@ -49,17 +42,9 @@ function App() {
   const { TEAM, gini, loadByPerson } = window.LUMIN;
   const byPerson = loadByPerson(history);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
-  const openCount = history.filter((task) => task.status === "open").length;
   const overloaded = TEAM.filter(
-    (person) => (byPerson[person.id] || 0) >= t.imbalanceThreshold,
+    (person) => (byPerson[person.id] || 0) >= tweaks.imbalanceThreshold,
   ).length;
-
-  function handleAssign(task) {
-    setExtraTasks((prev) => [
-      ...prev,
-      { ...task, id: `x${prev.length + 1}` },
-    ]);
-  }
 
   const nav = [
     { id: "dashboard", label: "Equity console", count: null },
@@ -112,22 +97,14 @@ function App() {
             <span className="nav-count mono">{ginVal.toFixed(2)}</span>
           </div>
         </div>
-
-        <div className="sidebar-foot">
-          <div style={{ marginBottom: 6 }}>v0.4.2 · hackathon build</div>
-          <div>Eng / Platform</div>
-          <div>{window.LUMIN.TEAM.length} members · 30d window</div>
-        </div>
       </aside>
 
       <main className="main">
         <div className="topbar">
           <div className="crumbs">
-            lumin / <b>eng-platform</b> / {nav.find((item) => item.id === route)?.label}
+            lumin / {nav.find((item) => item.id === route)?.label}
           </div>
           <div className="topbar-right">
-            <span className="live-dot" />
-            Live · {t.useClaude ? "Claude classifier" : "Keyword fallback"}
             <span style={{ opacity: 0.5 }}>·</span>
             <span>30d window</span>
           </div>
@@ -135,59 +112,13 @@ function App() {
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={t.imbalanceThreshold} />
+            <Dashboard history={history} threshold={tweaks.imbalanceThreshold} />
           )}
           {route === "team" && (
-            <Team history={history} threshold={t.imbalanceThreshold} />
+            <Team history={history} threshold={tweaks.imbalanceThreshold} />
           )}
         </div>
       </main>
-
-      <TweaksPanel>
-        <TweakSection label="Theme" />
-        <TweakRadio
-          label="Surface"
-          value={t.theme}
-          options={["light", "dark", "terminal"]}
-          onChange={(value) => setTweak("theme", value)}
-        />
-        <TweakRadio
-          label="Density"
-          value={t.density}
-          options={["compact", "regular"]}
-          onChange={(value) => setTweak("density", value)}
-        />
-
-        <TweakSection label="Lumin voice" />
-        <TweakSelect
-          label="Tone of detection"
-          value={t.tone}
-          options={[
-            { value: "data", label: "Data-driven" },
-            { value: "direct", label: "Direct" },
-            { value: "coach", label: "Coaching" },
-          ]}
-          onChange={(value) => setTweak("tone", value)}
-        />
-
-        <TweakSection label="Policy" />
-        <TweakSlider
-          label="Imbalance threshold"
-          value={t.imbalanceThreshold}
-          min={3}
-          max={10}
-          step={1}
-          unit=" tasks"
-          onChange={(value) => setTweak("imbalanceThreshold", value)}
-        />
-
-        <TweakSection label="Classifier" />
-        <TweakToggle
-          label="Use Claude for classification"
-          value={t.useClaude}
-          onChange={(value) => setTweak("useClaude", value)}
-        />
-      </TweaksPanel>
     </div>
   );
 }

@@ -20,7 +20,6 @@ export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR })
 						<th>Category</th>
 						<th>Assigned</th>
 						<th>When</th>
-						<th className="right">Status</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -39,11 +38,6 @@ export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR })
 									</div>
 								</td>
 								<td className="mono" style={{ color: "var(--c-mute)" }}>{relTime(task.days)}</td>
-								<td className="right">
-									{task.status === "done"
-										? <Pill kind="good">done</Pill>
-										: <Pill kind="ghost">open</Pill>}
-								</td>
 							</tr>
 						);
 					})}
