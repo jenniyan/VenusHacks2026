@@ -5,7 +5,6 @@ import { Avatar, Card, Legend, Pill, StackedBar, Stat, TEAM_BY_ID, relTime } fro
 function Dashboard({ history, threshold }) {
   const { TEAM, NPT_CATEGORIES, CATEGORY_COLOR, loadByPerson, loadByPersonCategory, gini } = window.LUMIN;
 
-  // compute aggregates
   const byPerson = loadByPerson(history);
   const byPC = loadByPersonCategory(history);
   const counts = TEAM.map(p => byPerson[p.id] || 0);

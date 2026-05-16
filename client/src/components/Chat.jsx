@@ -28,11 +28,16 @@ const TONE_TEMPLATES = {
 // keyword-based classifier (fallback)
 const KEYWORDS = {
   notes:        ["take notes", "taking notes", "notes for", "note taker", "minutes", "note-taker", "recap the"],
-  social:       ["organize", "team dinner", "team lunch", "social", "happy hour", "birthday", "celebrat", "offsite"],
-  onboarding:   ["onboard", "new intern", "new hire", "ramp", "buddy", "show them around"],
   scheduling:   ["schedule", "book a room", "set up a meeting", "find a time", "calendar"],
+  onboarding:   ["onboard", "new intern", "new hire", "ramp", "buddy", "show them around"],
   mentoring:    ["mentor", "pair with", "coach", "tutor", "shadow"],
+  social:       ["organize", "team dinner", "team lunch", "social", "happy hour", "birthday", "celebrat", "offsite"],
   coordination: ["coordinate", "logistics", "drive the", "run point", "own the rota", "ooo tracker"],
+  recognition:  ["kudos", "thank you", "shout out", "celebrat", "appreciat"],
+  culture_admin:["dei", "erg", "survey", "panel chair", "hiring panel", "committee"],
+  interviewing: ["interview", "debrief", "loop", "candidate", "panel"],
+  docs_housekeeping: ["confluence", "wiki", "broken link", "docs", "documentation", "housekeeping"],
+  support_triage: ["ask-eng", "customer escalation", "triage", "ticket", "support"],
 };
 
 function localClassify(text) {
@@ -71,7 +76,7 @@ Message: ${JSON.stringify(text)}
 Return ONLY a JSON object with this exact shape (no markdown, no extra text):
 {
   "isNPT": boolean,
-  "category": "notes"|"social"|"onboarding"|"scheduling"|"mentoring"|"coordination"|null,
+    "category": "notes"|"scheduling"|"onboarding"|"mentoring"|"social"|"coordination"|"recognition"|"culture_admin"|"interviewing"|"docs_housekeeping"|"support_triage"|"other"|null,
   "target": "<roster id>"|null,
   "explanation": "one sentence why"
 }`;

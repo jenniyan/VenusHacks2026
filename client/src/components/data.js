@@ -1,21 +1,33 @@
 // data.js — mock team + task history for Lumin
 
 const NPT_CATEGORIES = [
-  { id: "notes",       label: "Meeting notes",     short: "Notes" },
-  { id: "social",      label: "Social planning",   short: "Social" },
-  { id: "onboarding",  label: "Onboarding",        short: "Onboard" },
-  { id: "scheduling",  label: "Scheduling",        short: "Sched" },
-  { id: "mentoring",   label: "Mentoring",         short: "Mentor" },
-  { id: "coordination",label: "Team coordination", short: "Coord" },
+  { id: "notes",             label: "Meeting notes",        short: "Notes" },
+  { id: "scheduling",        label: "Scheduling",           short: "Sched" },
+  { id: "onboarding",        label: "Onboarding",           short: "Onboard" },
+  { id: "mentoring",         label: "Mentoring",            short: "Mentor" },
+  { id: "social",            label: "Social planning",      short: "Social" },
+  { id: "coordination",      label: "Team coordination",    short: "Coord" },
+  { id: "recognition",       label: "Recognition & morale", short: "Kudos" },
+  { id: "culture_admin",     label: "Culture / admin",      short: "Culture" },
+  { id: "interviewing",      label: "Interviewing volume",   short: "Interviews" },
+  { id: "docs_housekeeping", label: "Docs housekeeping",     short: "Docs" },
+  { id: "support_triage",    label: "Support triage",       short: "Support" },
+  { id: "other",             label: "Other",                 short: "Other" },
 ];
 
 const CATEGORY_COLOR = {
-  notes:        "var(--c-cat-1)",
-  social:       "var(--c-cat-2)",
-  onboarding:   "var(--c-cat-3)",
-  scheduling:   "var(--c-cat-4)",
-  mentoring:    "var(--c-cat-5)",
-  coordination: "var(--c-cat-6)",
+  notes:             "var(--c-cat-1)",
+  scheduling:        "var(--c-cat-2)",
+  onboarding:        "var(--c-cat-3)",
+  mentoring:         "var(--c-cat-4)",
+  social:            "var(--c-cat-5)",
+  coordination:      "var(--c-cat-6)",
+  recognition:       "var(--c-cat-7)",
+  culture_admin:     "var(--c-cat-8)",
+  interviewing:      "var(--c-cat-9)",
+  docs_housekeeping: "var(--c-cat-10)",
+  support_triage:    "var(--c-cat-11)",
+  other:             "var(--c-cat-12)",
 };
 
 const TEAM = [
@@ -34,23 +46,23 @@ const TEAM = [
 const TASK_HISTORY = [
   // Sarah — heavy
   { id: "t01", person: "sarah",  category: "notes",        title: "Took notes — Q3 planning",        days: 28, status: "done" },
-  { id: "t02", person: "sarah",  category: "notes",        title: "Took notes — design review",      days: 24, status: "done" },
+  { id: "t02", person: "sarah",  category: "docs_housekeeping", title: "Cleaned up design review notes",    days: 24, status: "done" },
   { id: "t03", person: "sarah",  category: "social",       title: "Organized team dinner",            days: 21, status: "done" },
   { id: "t04", person: "sarah",  category: "onboarding",   title: "Onboarded contractor (J. Liu)",    days: 17, status: "done" },
-  { id: "t05", person: "sarah",  category: "notes",        title: "Took notes — staff sync",          days: 14, status: "done" },
+  { id: "t05", person: "sarah",  category: "recognition",  title: "Posted kudos after staff sync",     days: 14, status: "done" },
   { id: "t06", person: "sarah",  category: "scheduling",   title: "Scheduled offsite logistics",      days: 11, status: "done" },
   { id: "t07", person: "sarah",  category: "social",       title: "Coordinated farewell card",         days:  8, status: "done" },
   { id: "t08", person: "sarah",  category: "mentoring",    title: "Mentored Elena · sprint 14",        days:  5, status: "done" },
-  { id: "t09", person: "sarah",  category: "notes",        title: "Took notes — postmortem",           days:  3, status: "done" },
+  { id: "t09", person: "sarah",  category: "support_triage", title: "Triage follow-ups for postmortem",   days:  3, status: "done" },
   { id: "t10", person: "sarah",  category: "coordination", title: "Owned holiday OOO tracker",         days:  2, status: "open" },
 
   // Maya — also heavy
   { id: "t11", person: "maya",   category: "notes",        title: "Took notes — weekly sync",          days: 27, status: "done" },
   { id: "t12", person: "maya",   category: "onboarding",   title: "Onboarded Elena",                   days: 22, status: "done" },
-  { id: "t13", person: "maya",   category: "notes",        title: "Took notes — design crit",          days: 19, status: "done" },
+  { id: "t13", person: "maya",   category: "interviewing", title: "Ran interview debrief for design crit", days: 19, status: "done" },
   { id: "t14", person: "maya",   category: "mentoring",    title: "Mentored Jordan · sprint 13",       days: 13, status: "done" },
   { id: "t15", person: "maya",   category: "social",       title: "Organized birthday cake",           days:  9, status: "done" },
-  { id: "t16", person: "maya",   category: "notes",        title: "Took notes — leadership review",    days:  6, status: "done" },
+  { id: "t16", person: "maya",   category: "culture_admin", title: "Coordinated leadership review survey", days:  6, status: "done" },
   { id: "t17", person: "maya",   category: "coordination", title: "Ran sprint retro logistics",        days:  1, status: "open" },
 
   // Priya
@@ -66,7 +78,7 @@ const TASK_HISTORY = [
   { id: "t25", person: "chris",  category: "scheduling",   title: "Booked all-hands rooms",            days:  4, status: "done" },
 
   // Daniel — light
-  { id: "t26", person: "daniel", category: "notes",        title: "Took notes — vendor call",          days: 15, status: "done" },
+  { id: "t26", person: "daniel", category: "other",        title: "Handled an ad hoc cross-team request", days: 15, status: "done" },
   { id: "t27", person: "daniel", category: "social",       title: "Picked lunch venue",                 days:  6, status: "done" },
 
   // Jordan — very light
@@ -80,18 +92,21 @@ const TASK_HISTORY = [
 
 // helpers
 function loadByPerson(history) {
+  const source = Array.isArray(history) ? history : TASK_HISTORY;
   const m = {};
-  for (const t of TASK_HISTORY) m[t.person] = (m[t.person] || 0) + 1;
+  for (const t of source) m[t.person] = (m[t.person] || 0) + 1;
   return m;
 }
 function loadByCategory(history) {
+  const source = Array.isArray(history) ? history : TASK_HISTORY;
   const m = {};
-  for (const t of TASK_HISTORY) m[t.category] = (m[t.category] || 0) + 1;
+  for (const t of source) m[t.category] = (m[t.category] || 0) + 1;
   return m;
 }
 function loadByPersonCategory(history) {
+  const source = Array.isArray(history) ? history : TASK_HISTORY;
   const m = {};
-  for (const t of TASK_HISTORY) {
+  for (const t of source) {
     m[t.person] = m[t.person] || {};
     m[t.person][t.category] = (m[t.person][t.category] || 0) + 1;
   }
