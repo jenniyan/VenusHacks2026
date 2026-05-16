@@ -45,47 +45,47 @@ const TEAM = [
 // dates are days ago. Designed to show clear imbalance (Sarah/Maya/Priya skewed).
 const TASK_HISTORY = [
   // Sarah — heavy
-  { id: "t01", person: "sarah",  category: "notes",        title: "Took notes — Q3 planning",        days: 28, status: "done" },
-  { id: "t02", person: "sarah",  category: "docs_housekeeping", title: "Cleaned up design review notes",    days: 24, status: "done" },
-  { id: "t03", person: "sarah",  category: "social",       title: "Organized team dinner",            days: 21, status: "done" },
-  { id: "t04", person: "sarah",  category: "onboarding",   title: "Onboarded contractor (J. Liu)",    days: 17, status: "done" },
-  { id: "t05", person: "sarah",  category: "recognition",  title: "Posted kudos after staff sync",     days: 14, status: "done" },
-  { id: "t06", person: "sarah",  category: "scheduling",   title: "Scheduled offsite logistics",      days: 11, status: "done" },
-  { id: "t07", person: "sarah",  category: "social",       title: "Coordinated farewell card",         days:  8, status: "done" },
-  { id: "t08", person: "sarah",  category: "mentoring",    title: "Mentored Elena · sprint 14",        days:  5, status: "done" },
-  { id: "t09", person: "sarah",  category: "support_triage", title: "Triage follow-ups for postmortem",   days:  3, status: "done" },
-  { id: "t10", person: "sarah",  category: "coordination", title: "Owned holiday OOO tracker",         days:  2, status: "open" },
+  { id: "t01", person: "sarah",  category: "notes",        title: "Took notes — Q3 planning",        days: 28},
+  { id: "t02", person: "sarah",  category: "docs_housekeeping", title: "Cleaned up design review notes",    days: 24},
+  { id: "t03", person: "sarah",  category: "social",       title: "Organized team dinner",            days: 21},
+  { id: "t04", person: "sarah",  category: "onboarding",   title: "Onboarded contractor (J. Liu)",    days: 17},
+  { id: "t05", person: "sarah",  category: "recognition",  title: "Posted kudos after staff sync",     days: 14},
+  { id: "t06", person: "sarah",  category: "scheduling",   title: "Scheduled offsite logistics",      days: 11},
+  { id: "t07", person: "sarah",  category: "social",       title: "Coordinated farewell card",         days:  8},
+  { id: "t08", person: "sarah",  category: "mentoring",    title: "Mentored Elena · sprint 14",        days:  5},
+  { id: "t09", person: "sarah",  category: "support_triage", title: "Triage follow-ups for postmortem",   days:  3},
+  { id: "t10", person: "sarah",  category: "coordination", title: "Owned holiday OOO tracker",         days:  2},
 
   // Maya — also heavy
   { id: "t11", person: "maya",   category: "notes",        title: "Took notes — weekly sync",          days: 27, status: "done" },
   { id: "t12", person: "maya",   category: "onboarding",   title: "Onboarded Elena",                   days: 22, status: "done" },
   { id: "t13", person: "maya",   category: "interviewing", title: "Ran interview debrief for design crit", days: 19, status: "done" },
   { id: "t14", person: "maya",   category: "mentoring",    title: "Mentored Jordan · sprint 13",       days: 13, status: "done" },
-  { id: "t15", person: "maya",   category: "social",       title: "Organized birthday cake",           days:  9, status: "done" },
-  { id: "t16", person: "maya",   category: "culture_admin", title: "Coordinated leadership review survey", days:  6, status: "done" },
-  { id: "t17", person: "maya",   category: "coordination", title: "Ran sprint retro logistics",        days:  1, status: "open" },
+  { id: "t15", person: "maya",   category: "social",       title: "Organized birthday cake",           days:  9},
+  { id: "t16", person: "maya",   category: "culture_admin", title: "Coordinated leadership review survey", days:  6},
+  { id: "t17", person: "maya",   category: "coordination", title: "Ran sprint retro logistics",        days:  1},
 
   // Priya
-  { id: "t18", person: "priya",  category: "mentoring",    title: "Mentored Daniel · staff promo",     days: 25, status: "done" },
-  { id: "t19", person: "priya",  category: "onboarding",   title: "Onboarded Jordan",                  days: 20, status: "done" },
-  { id: "t20", person: "priya",  category: "coordination", title: "Ran on-call rotation rebuild",      days: 12, status: "done" },
-  { id: "t21", person: "priya",  category: "notes",        title: "Took notes — arch review",          days:  7, status: "done" },
-  { id: "t22", person: "priya",  category: "mentoring",    title: "Mentored Elena · architecture",     days:  4, status: "done" },
+  { id: "t18", person: "priya",  category: "mentoring",    title: "Mentored Daniel · staff promo",     days: 25},
+  { id: "t19", person: "priya",  category: "onboarding",   title: "Onboarded Jordan",                  days: 20},
+  { id: "t20", person: "priya",  category: "coordination", title: "Ran on-call rotation rebuild",      days: 12},
+  { id: "t21", person: "priya",  category: "notes",        title: "Took notes — arch review",          days:  7},
+  { id: "t22", person: "priya",  category: "mentoring",    title: "Mentored Elena · architecture",     days:  4},
 
   // Chris (manager) — some scheduling
-  { id: "t23", person: "chris",  category: "scheduling",   title: "Scheduled 1:1 cadence reset",       days: 23, status: "done" },
-  { id: "t24", person: "chris",  category: "coordination", title: "Coordinated cross-team launch",     days: 10, status: "done" },
-  { id: "t25", person: "chris",  category: "scheduling",   title: "Booked all-hands rooms",            days:  4, status: "done" },
+  { id: "t23", person: "chris",  category: "scheduling",   title: "Scheduled 1:1 cadence reset",       days: 23},
+  { id: "t24", person: "chris",  category: "coordination", title: "Coordinated cross-team launch",     days: 10},
+  { id: "t25", person: "chris",  category: "scheduling",   title: "Booked all-hands rooms",            days:  4},
 
   // Daniel — light
-  { id: "t26", person: "daniel", category: "other",        title: "Handled an ad hoc cross-team request", days: 15, status: "done" },
-  { id: "t27", person: "daniel", category: "social",       title: "Picked lunch venue",                 days:  6, status: "done" },
+  { id: "t26", person: "daniel", category: "other",        title: "Handled an ad hoc cross-team request", days: 15},
+  { id: "t27", person: "daniel", category: "social",       title: "Picked lunch venue",                 days:  6},
 
   // Jordan — very light
-  { id: "t28", person: "jordan", category: "scheduling",   title: "Scheduled intern coffee chat",       days:  9, status: "done" },
+  { id: "t28", person: "jordan", category: "scheduling",   title: "Scheduled intern coffee chat",       days:  9},
 
   // Elena — newest, very light
-  { id: "t29", person: "elena",  category: "onboarding",   title: "Co-onboarded a contractor",         days:  2, status: "open" },
+  { id: "t29", person: "elena",  category: "onboarding",   title: "Co-onboarded a contractor",         days:  2},
 
   // Alex — zero. By design.
 ];
