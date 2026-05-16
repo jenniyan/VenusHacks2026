@@ -82,7 +82,7 @@ export function chooseLowestLoadMember(load, category, members, requestedPerson)
 // Checks if any team member is mentioned in the message, either via Slack @mention
 // format (<@UXXXXXXX>) or by plain display name.
 export function findMentionedTeamMember(text, members) {
-  const slackMentionMatch = text.match(/<@([A-Z0-9]+)>/);
+  const slackMentionMatch = text.match(/<@([A-Za-z0-9]+)>/);
   if (slackMentionMatch) {
     const mentionedId = slackMentionMatch[1];
     return members.find((m) => m.slack_user_id === mentionedId);
