@@ -21,12 +21,21 @@ const DEFAULT_POLICY = {
   lookbackDays: 30,
   excludeManagers: true,
 };
+const TIME_WINDOWS = [
+  { value: "1d", label: "Last 1 day" },
+  { value: "7d", label: "Last 7 days" },
+  { value: "14d", label: "Last 14 days" },
+  { value: "30d", label: "Last 30 days" },
+  { value: "90d", label: "Last 90 days" },
+  { value: "all", label: "All time" },
+];
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 
 function App() {
   const [route, setRoute] = useState("dashboard");
   const [teamMembers, setTeamMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [policy] = useState(DEFAULT_POLICY);
   const [loadState, setLoadState] = useState({ loading: true, error: null });
   const [selectedWindow, setSelectedWindow] = useState("30d");
 
@@ -72,6 +81,12 @@ function App() {
   })), [teamMembers]);
 
   const history = useMemo(() => tasks, [tasks]);
+  const visibleHistory = useMemo(() => {
+    const windowMap = { "1d": 1, "7d": 7, "14d": 14, "30d": 30, "90d": 90 };
+    if (selectedWindow === "all") return history;
+    return history.filter((task) => (typeof task.days === "number" ? task.days <= (windowMap[selectedWindow] || 30) : true));
+  }, [history, selectedWindow]);
+
   const luminState = useMemo(
     () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: visibleHistory }),
     [runtimeTeam, visibleHistory],
@@ -157,10 +172,9 @@ function App() {
                 onChange={(e) => setSelectedWindow(e.target.value)}
                 className="time-window-select"
               >
-                <option value="30d">30d window</option>
-                <option value="1d">1d window</option>
-                <option value="7d">7d window</option>
-                <option value="all">All time</option>
+                {TIME_WINDOWS.map((window) => (
+                  <option key={window.value} value={window.value}>{window.label}</option>
+                ))}
               </select>
             )}
           </div>
