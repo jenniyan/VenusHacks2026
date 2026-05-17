@@ -119,6 +119,8 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
               <div
                 key={cat.id}
                 className="bar-seg"
+                data-tooltip={`${cat.label}: ${v}`}
+                tabIndex={0}
                 style={{
                   width: `${segPct}%`,
                   height: "100%",
@@ -126,14 +128,8 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
                   cursor: "pointer",
                   position: "relative",
                 }}
-              >
-                <span
-                  className="seg-tip"
-                  style={{ background: CATEGORY_COLOR[cat.id] }}
-                >
-                  {cat.label}: {v}
-                </span>
-              </div>
+                aria-label={`${cat.label}: ${v} NPT${v === 1 ? "" : "s"}`}
+              />
             );
           })}
         </div>
