@@ -1,6 +1,6 @@
 /* eslint-env browser */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import "./App.css";
 import {
@@ -16,7 +16,11 @@ import "./pages/team/Team";
 const { Dashboard, Team } = window;
 const THEME = "light";
 const DENSITY = "regular";
-const IMBALANCE_THRESHOLD = 6;
+const DEFAULT_POLICY = {
+  overloadThreshold: 6,
+  lookbackDays: 30,
+  excludeManagers: true,
+};
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 
 function App() {
@@ -31,51 +35,36 @@ function App() {
     document.documentElement.dataset.density = DENSITY;
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadBackendData = useCallback(async () => {
+    try {
+      setLoadState({ loading: true, error: null });
 
-    async function loadBackendData() {
-      try {
-        setLoadState({ loading: true, error: null });
+      const [teamResponse, tasksResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/team-members`),
+        fetch(`${API_BASE_URL}/api/tasks/with-details`),
+      ]);
 
-        const [teamResponse, tasksResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/team-members`),
-          fetch(`${API_BASE_URL}/api/tasks/with-details`),
-        ]);
+      if (!teamResponse.ok) throw new Error(`Team members request failed with ${teamResponse.status}`);
+      if (!tasksResponse.ok) throw new Error(`Tasks request failed with ${tasksResponse.status}`);
 
-        if (!teamResponse.ok) {
-          throw new Error(`Team members request failed with ${teamResponse.status}`);
-        }
+      const [teamData, taskData] = await Promise.all([
+        teamResponse.json(),
+        tasksResponse.json(),
+      ]);
 
-        if (!tasksResponse.ok) {
-          throw new Error(`Tasks request failed with ${tasksResponse.status}`);
-        }
-
-        const [teamData, taskData] = await Promise.all([
-          teamResponse.json(),
-          tasksResponse.json(),
-        ]);
-
-        if (cancelled) return;
-
-        setTeamMembers(Array.isArray(teamData) ? teamData.map(normalizeTeamMember) : []);
-        setTasks(Array.isArray(taskData) ? taskData.map(normalizeTask) : []);
-        setLoadState({ loading: false, error: null });
-      } catch (error) {
-        if (cancelled) return;
-
-        setTeamMembers([]);
-        setTasks([]);
-        setLoadState({ loading: false, error: error.message });
-      }
+      setTeamMembers(Array.isArray(teamData) ? teamData.map(normalizeTeamMember) : []);
+      setTasks(Array.isArray(taskData) ? taskData.map(normalizeTask) : []);
+      setLoadState({ loading: false, error: null });
+    } catch (error) {
+      setTeamMembers([]);
+      setTasks([]);
+      setLoadState({ loading: false, error: error.message });
     }
-
-    loadBackendData();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadBackendData();
+  }, [loadBackendData]);
 
   const runtimeTeam = useMemo(() => teamMembers.map((member, index) => ({
     ...member,
@@ -84,16 +73,17 @@ function App() {
 
   const history = useMemo(() => tasks, [tasks]);
   const luminState = useMemo(
-    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: history }),
-    [runtimeTeam, history],
+    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: visibleHistory }),
+    [runtimeTeam, visibleHistory],
   );
 
   const { TEAM, gini, loadByPerson } = luminState;
-  const byPerson = loadByPerson(history);
+  const byPerson = loadByPerson(visibleHistory);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
-    (person) => (byPerson[person.id] || 0) >= IMBALANCE_THRESHOLD,
+    (person) => (byPerson[person.id] || 0) >= policy.overloadThreshold,
   ).length;
+  const IMBALANCE_THRESHOLD = policy.overloadThreshold;
 
   const nav = [
     { id: "dashboard", label: "Equity console", count: null },
@@ -128,7 +118,7 @@ function App() {
         </div>
 
         <div className="nav-section">Signals</div>
-        <div className="nav">
+        <div className="nav signals-nav">
           <div className="nav-item">
             <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
             Imbalance

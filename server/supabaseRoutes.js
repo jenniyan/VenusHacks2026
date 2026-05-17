@@ -416,6 +416,25 @@ router.put("/tasks/:id", async (req, res) => {
   }
 });
 
+// PATCH mark task complete
+router.patch("/tasks/:id/complete", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from("tasks")
+      .update({ completed: true })
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+    if (data.length === 0) return res.status(404).json({ error: "Task not found" });
+
+    res.json(data[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // DELETE task
 router.delete("/tasks/:id", async (req, res) => {
   try {

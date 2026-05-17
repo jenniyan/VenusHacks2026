@@ -13,15 +13,38 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 		[TEAM, byPerson, sortDir],
 	);
 	const sortLabel = sortDir === "desc" ? "most to least NPTs" : "least to most NPTs";
+	const reportRows = useMemo(
+		() =>
+			sortedTeam.map((person) => {
+				const total = byPerson[person.id] || 0;
+				const breakdown = byPC[person.id] || {};
+				return {
+					person,
+					total,
+					breakdown,
+					status: getStatus(total, threshold),
+				};
+			}),
+		[byPC, byPerson, sortedTeam, threshold],
+	);
+
+	function handleExportCsv() {
+		const csv = buildRosterCsv(reportRows, NPT_CATEGORIES);
+		const date = new Date().toISOString().slice(0, 10);
+		downloadCsv(csv, `lumin-npt-roster-report-${date}.csv`);
+	}
 
 	return (
 		<Card
 			title="Roster"
-			meta={`sorted by current NPT load · ${sortLabel}`}
+			meta={""}
 			action={
-				<span style={{ display: "flex", gap: 6 }}>
+				<span className="roster-actions">
 					<SortToggle sortDir={sortDir} onChange={setSortDir} />
-					<Pill kind="ghost">export csv</Pill>
+					<button type="button" className="export-csv-btn" onClick={handleExportCsv}>
+						<span className="export-csv-icon" aria-hidden="true">↓</span>
+						<span>Export CSV</span>
+					</button>
 				</span>
 			}
 		>
@@ -30,9 +53,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 					<tr>
 						<th>Member</th>
 						<th>Role</th>
-						<th>TZ</th>
-						<th>Joined</th>
-						<th className="right">NPTs · 30d</th>
+						<th className="right">NPTs</th>
 						<th style={{ width: 240 }}>Breakdown</th>
 						<th className="right">Status</th>
 					</tr>
@@ -40,8 +61,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 				<tbody>
 					{sortedTeam.map((person) => {
 						const total = byPerson[person.id] || 0;
-						const over = total >= threshold;
-						const under = total <= 1;
+						const status = getStatus(total, threshold);
 						const breakdown = byPC[person.id] || {};
 
 						return (
@@ -56,8 +76,6 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 									</div>
 								</td>
 								<td>{person.role}</td>
-								<td className="mono" style={{ color: "var(--c-mute)" }}>{person.tz}</td>
-								<td className="mono" style={{ color: "var(--c-mute)" }}>{person.joined}</td>
 								<td className="right num">{total}</td>
 								<td>
 									<div style={{ position: "relative", height: 14, background: "var(--c-panel-2)", border: "1px solid var(--c-line)", borderRadius: 2, overflow: "hidden" }}>
@@ -71,6 +89,9 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 												const segment = (
 													<div
 														key={category.id}
+														className="bar-seg"
+														data-tooltip={`${category.label}: ${value}`}
+														tabIndex={0}
 														style={{
 															position: "absolute",
 															top: 0,
@@ -79,7 +100,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 															width: `${segPct}%`,
 															background: CATEGORY_COLOR[category.id],
 														}}
-														title={`${category.label}: ${value}`}
+														aria-label={`${category.label}: ${value} NPT${value === 1 ? "" : "s"}`}
 													/>
 												);
 												left += segPct;
@@ -89,19 +110,78 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 									</div>
 								</td>
 								<td className="right">
-									{over && <span className="pill" style={{ borderColor: "var(--warning)", background: "var(--warning-soft)", padding: "4px 8px" }}>overloaded</span>}
-									{under && !over && <Pill kind="good">available</Pill>}
-									{!over && !under && <Pill kind="ghost">balanced</Pill>}
+									{status === "overloaded" && <span className="pill" style={{ borderColor: "var(--warning)", background: "var(--warning-soft)", padding: "4px 8px" }}>overloaded</span>}
+									{status === "available" && <Pill kind="good">available</Pill>}
+									{status === "balanced" && <Pill kind="ghost">balanced</Pill>}
 								</td>
 							</tr>
 						);
 					})}
 				</tbody>
 			</table>
-			<div className="divider"></div>
-			<Legend />
+			{/* <div className="divider"></div>
+			<Legend /> */}
 		</Card>
 	);
+}
+
+function getStatus(total, threshold) {
+	if (total >= threshold) return "overloaded";
+	if (total <= 1) return "available";
+	return "balanced";
+}
+
+function buildRosterCsv(rows, categories) {
+	const headers = [
+		"Member",
+		"Member ID",
+		"Role",
+		"Total NPTs",
+		"Status",
+		...categories.map((category) => category.label),
+		"Top NPT Category",
+		"Top NPT Category Count",
+	];
+
+	const body = rows.map(({ person, total, breakdown, status }) => {
+		const [topCategoryId, topCategoryCount = 0] =
+			Object.entries(breakdown).sort((a, b) => b[1] - a[1])[0] || [];
+		const topCategory = categories.find((category) => category.id === topCategoryId);
+
+		return [
+			person.name,
+			person.id,
+			person.role || "",
+			total,
+			status,
+			...categories.map((category) => breakdown[category.id] || 0),
+			topCategory?.label || "",
+			topCategoryCount || 0,
+		];
+	});
+
+	return [headers, ...body].map((row) => row.map(csvCell).join(",")).join("\n");
+}
+
+function csvCell(value) {
+	const text = String(value ?? "");
+	if (/[",\n]/.test(text)) {
+		return `"${text.replace(/"/g, '""')}"`;
+	}
+	return text;
+}
+
+function downloadCsv(csv, filename) {
+	const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement("a");
+
+	link.href = url;
+	link.download = filename;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+	URL.revokeObjectURL(url);
 }
 
 function SortToggle({ sortDir, onChange }) {

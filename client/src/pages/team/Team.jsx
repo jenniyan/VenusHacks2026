@@ -13,7 +13,7 @@ function Team({ history, threshold, selectedWindow = "30d" }) {
     loadByPerson,
     loadByPersonCategory,
   } = useLuminData();
-  const windowMap = { "1d": 1, "7d": 7, "30d": 30 };
+  const windowMap = { "1d": 1, "7d": 7, "14d": 14, "30d": 30, "90d": 90 };
   const filteredHistory = selectedWindow === "all"
     ? history
     : history.filter((t) => (typeof t.days === "number" ? t.days <= (windowMap[selectedWindow] || 30) : true));
@@ -34,12 +34,14 @@ function Team({ history, threshold, selectedWindow = "30d" }) {
         </div>
       </div>
 
-      <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
+      
 
       <div className="grid g-2">
         <Policy threshold={threshold} />
         <Categories NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} />
       </div>
+
+      <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
     </div>
   );
 }

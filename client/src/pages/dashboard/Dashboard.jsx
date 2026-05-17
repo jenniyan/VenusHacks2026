@@ -6,7 +6,6 @@ import Alert from "./components/Alert";
 import Assignments from "./components/Assignments";
 import Categories from "./components/Categories";
 import Distribution from "./components/Distribution";
-import Outliers from "./components/Outliers";
 
 function Dashboard({ history, threshold, selectedWindow = "30d" }) {
   const {
@@ -19,7 +18,7 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
   } = useLuminData();
 
   // apply active time window filter to history
-  const windowMap = { "1d": 1, "7d": 7, "30d": 30 };
+  const windowMap = { "1d": 1, "7d": 7, "14d": 14, "30d": 30, "90d": 90 };
   const filteredHistory = selectedWindow === "all"
     ? history
     : history.filter((t) => (typeof t.days === "number" ? t.days <= (windowMap[selectedWindow] || 30) : true));
@@ -31,7 +30,6 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
   const max = Math.max(...counts, 1);
   const total = counts.reduce((a, b) => a + b, 0);
   const top = sorted[0];
-  const bottom = sorted[sorted.length - 1];
   const giniVal = gini(counts);
   const overloaded = counts.filter(c => c >= threshold).length;
 
@@ -98,7 +96,7 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
             CATEGORY_COLOR={CATEGORY_COLOR}
           />
 
-          <Outliers top={top} bottom={bottom} byPerson={byPerson} />
+          {/* <Outliers top={top} bottom={bottom} byPerson={byPerson} /> */}
         </div>
       </div>
 
