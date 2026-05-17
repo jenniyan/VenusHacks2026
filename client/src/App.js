@@ -17,7 +17,7 @@ const { Dashboard, Team } = window;
 const THEME = "light";
 const DENSITY = "regular";
 const DEFAULT_POLICY = {
-  overloadThreshold: 6,
+  overloadThreshold: 14,
   lookbackDays: 30,
   excludeManagers: true,
 };
