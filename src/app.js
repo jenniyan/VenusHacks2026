@@ -1,4 +1,7 @@
 import "dotenv/config";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import slackBolt from "@slack/bolt";
 import {
   analyzeMessage,
@@ -19,6 +22,9 @@ function categoryLabel(slug) {
 }
 
 const { App } = slackBolt;
+const lockPath = path.join(os.tmpdir(), "lumin-slack-bot.pid");
+
+acquireSingleInstanceLock();
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -35,19 +41,32 @@ app.message(async ({ message, client }) => {
   try {
     console.log(`[lumin] raw message — subtype=${message.subtype ?? "none"} text="${message.text?.slice(0, 60)}"`);
     if (!message.text || message.subtype) return;
+    const isDirectMessage = message.channel_type === "im" || message.channel?.startsWith("D");
 
     const analysis = await analyzeMessage(message.text);
+    console.log(
+      `[lumin] classified — isNpt=${analysis.isNpt} category=${analysis.category ?? "none"} title="${analysis.taskTitle ?? ""}"`,
+    );
     if (!analysis.isNpt) {
       console.log(`[lumin] NOT NPT: "${message.text}" — ${analysis.explanation}`);
       return;
     }
 
     const { load, members } = await getTeamLoad();
-    if (members.length === 0) return;
+    if (members.length === 0) {
+      console.log("[lumin] no team members found; skipping response");
+      return;
+    }
 
     const requestedPerson = findMentionedTeamMember(message.text, members);
     const suggestedPerson = chooseLowestLoadMember(load, analysis.category, members, requestedPerson);
-    if (!suggestedPerson) return;
+    if (!suggestedPerson) {
+      console.log("[lumin] no suggested person found; skipping response");
+      return;
+    }
+    console.log(
+      `[lumin] assignment suggestion — requested=${requestedPerson?.display_name ?? "none"} suggested=${suggestedPerson.display_name}`,
+    );
 
     const warning = buildWarning(requestedPerson, suggestedPerson, analysis.category, load);
 
@@ -58,6 +77,7 @@ app.message(async ({ message, client }) => {
       text: message.text,
       timestamp,
     });
+    console.log(`[lumin] saved source message id=${messageId}`);
 
     const isExactMatch = requestedPerson?.slack_user_id === suggestedPerson.slack_user_id;
     const taskLabel = `*${categoryLabel(analysis.category)}* Non-Promotable Task`;
@@ -78,6 +98,7 @@ app.message(async ({ message, client }) => {
       client,
       channel: message.channel,
       user: message.user,
+      isDirectMessage,
       text: responseText,
       blocks: [
         {
@@ -130,6 +151,7 @@ app.message(async ({ message, client }) => {
         },
       ],
     });
+    console.log(`[lumin] sent ${isDirectMessage ? "DM" : "ephemeral"} suggestion`);
   } catch (error) {
     console.error("Lumin failed to send private detection:", error);
   }
@@ -176,6 +198,15 @@ app.action("assign_suggested", async ({ ack, respond, body, client }) => {
     ],
   });
 
+  await notifyAssignee({
+    client,
+    assigneeSlackId: memberSlackId,
+    actorSlackId: body.user?.id,
+    taskTitle,
+    category,
+    redirectedFrom,
+  });
+
   if (redirectedFrom) {
     const channelId = body.container?.channel_id || body.channel?.id;
     try {
@@ -199,7 +230,7 @@ app.action("assign_suggested", async ({ ack, respond, body, client }) => {
 });
 
 // Handles the keep original button — records the override and replaces the buttons with a confirmation.
-app.action("keep_original", async ({ ack, respond, body }) => {
+app.action("keep_original", async ({ ack, respond, body, client }) => {
   await ack();
 
   const { messageId, assignedSlackId, assignedName, suggestedSlackId, category, taskTitle } =
@@ -227,6 +258,14 @@ app.action("keep_original", async ({ ack, respond, body }) => {
         },
       },
     ],
+  });
+
+  await notifyAssignee({
+    client,
+    assigneeSlackId: assignedSlackId,
+    actorSlackId: body.user?.id,
+    taskTitle,
+    category,
   });
 
 });
@@ -322,6 +361,12 @@ process.on("unhandledRejection", (reason) => {
 await app.start();
 startHealthCheck(app.client);
 
+try {
+  const auth = await app.client.auth.test();
+  console.log(`[lumin] connected as ${auth.user} (${auth.user_id}) on team ${auth.team} (${auth.team_id})`);
+} catch (error) {
+  console.error("[lumin] Connected to Socket Mode, but auth.test failed:", error);
+}
 
 try {
   const { members: slackMembers } = await app.client.users.list();
@@ -338,13 +383,51 @@ try {
 }
 
 
-async function sendLuminMessage({ client, channel, user, text, blocks }) {
+async function sendLuminMessage({ client, channel, user, isDirectMessage, text, blocks }) {
+  if (isDirectMessage) {
+    await client.chat.postMessage({
+      channel,
+      text,
+      blocks,
+    });
+    return;
+  }
+
   await client.chat.postEphemeral({
     channel,
     user,
     text,
     blocks,
   });
+}
+
+async function notifyAssignee({ client, assigneeSlackId, actorSlackId, taskTitle, category, redirectedFrom }) {
+  if (!assigneeSlackId || assigneeSlackId === actorSlackId) return;
+
+  const categoryText = categoryLabel(category);
+  const assignedByText = actorSlackId ? ` by <@${actorSlackId}>` : "";
+  const shiftedText = redirectedFrom ? `\n\nThis was shifted from *${redirectedFrom}* to balance the team load.` : "";
+
+  try {
+    const dm = await client.conversations.open({ users: assigneeSlackId });
+    await client.chat.postMessage({
+      channel: dm.channel.id,
+      text: `You were assigned "${taskTitle}" in Lumin.`,
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text:
+              `You were assigned *${taskTitle}*${assignedByText}.\n\n` +
+              `Category: *${categoryText}*${shiftedText}`,
+          },
+        },
+      ],
+    });
+  } catch (error) {
+    console.error(`[lumin] Failed to DM assignee ${assigneeSlackId}:`, error);
+  }
 }
 
 async function postPrivateConfirmation({ client, body, text }) {
@@ -376,3 +459,44 @@ function startHealthCheck(client) {
 
   setInterval(checkSlackConnection, intervalMs);
 }
+
+function acquireSingleInstanceLock() {
+  try {
+    if (fs.existsSync(lockPath)) {
+      const existingPid = Number(fs.readFileSync(lockPath, "utf8"));
+      if (existingPid && isProcessRunning(existingPid)) {
+        console.error(
+          `[lumin] Another bot process is already running as PID ${existingPid}. ` +
+            "Stop it before starting a new one.",
+        );
+        process.exit(1);
+      }
+      fs.rmSync(lockPath, { force: true });
+    }
+
+    fs.writeFileSync(lockPath, String(process.pid), { flag: "wx" });
+  } catch (error) {
+    console.error("[lumin] Could not create bot process lock:", error);
+    process.exit(1);
+  }
+}
+
+function isProcessRunning(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function releaseSingleInstanceLock() {
+  try {
+    const existingPid = Number(fs.readFileSync(lockPath, "utf8"));
+    if (existingPid === process.pid) fs.rmSync(lockPath, { force: true });
+  } catch {
+    // Nothing to release.
+  }
+}
+
+process.on("exit", releaseSingleInstanceLock);
