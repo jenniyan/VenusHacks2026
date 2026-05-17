@@ -10,7 +10,12 @@ import {
   insertMessage,
   recordAssignment,
   syncTeamMembers,
+  CATEGORIES,
 } from "./lumin.js";
+
+function categoryLabel(slug) {
+  return CATEGORIES.find((c) => c.slug === slug)?.label ?? slug;
+}
 
 const { App } = slackBolt;
 
@@ -46,7 +51,7 @@ app.message(async ({ message, client }) => {
     });
 
     const isExactMatch = requestedPerson?.slack_user_id === suggestedPerson.slack_user_id;
-    const taskLabel = `*${analysis.category}* Non-Promotable Task`;
+    const taskLabel = `*${categoryLabel(analysis.category)}* Non-Promotable Task`;
     let responseText = `This looks like a ${taskLabel} because ${analysis.explanation}`;
     if (!isExactMatch) {
       if (warning) {
@@ -89,7 +94,7 @@ app.message(async ({ message, client }) => {
                 memberSlackId: suggestedPerson.slack_user_id,
                 memberName: suggestedPerson.display_name,
                 category: analysis.category,
-                taskTitle: analysis.taskTitle || analysis.category,
+                taskTitle: analysis.taskTitle || categoryLabel(analysis.category),
                 ...(requestedPerson && requestedPerson.slack_user_id !== suggestedPerson.slack_user_id
                   ? { redirectedFrom: requestedPerson.display_name }
                   : {}),
@@ -107,7 +112,7 @@ app.message(async ({ message, client }) => {
                       assignedName: requestedPerson.display_name,
                       suggestedSlackId: suggestedPerson.slack_user_id,
                       category: analysis.category,
-                      taskTitle: analysis.taskTitle || analysis.category,
+                      taskTitle: analysis.taskTitle || categoryLabel(analysis.category),
                     }),
                   },
                 ]
