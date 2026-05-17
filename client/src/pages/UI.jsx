@@ -107,10 +107,7 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
         <span>{teamMember?.name?.split(" ")[0]}</span>
       </div>
       <div className="bar-track">
-        <div style={{
-          position: "absolute", top: 0, bottom: 0, left: 0,
-          width: `${pctMax}%`, display: "flex",
-        }}>
+        <div className="bar-fill" style={{ width: `${pctMax}%` }}>
           {NPT_CATEGORIES.map(cat => {
             const v = breakdown[cat.id] || 0;
             if (v === 0 || total === 0) return null;
