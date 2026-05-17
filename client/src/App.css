@@ -19,7 +19,7 @@
   --cat-1: #f7928b;
   --cat-2: #f7b88b;
   --cat-3: #f7dc8b;
-  --cat-4: #bff78b;
+  --cat-4: #b1db8a;
   --cat-5: #97dcc1;
   --cat-6: #8bcff7;
   --cat-7: #8b95f7;
@@ -384,7 +384,7 @@ textarea {
   height: 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  overflow: hidden;
+  overflow: visible;
   background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(247,242,255,0.98));
 }
 
@@ -395,6 +395,30 @@ textarea {
   flex: 0 0 auto;
   min-width: 2px;
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+/* tooltip shown above each segment; uses same color but darkened for contrast */
+.bar-seg .seg-tip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  white-space: nowrap;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  font-size: 11px;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform .12s ease, opacity .12s ease;
+  /* filter: brightness(.98); */
+}
+
+.bar-seg:hover .seg-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-5px);
 }
 
 .num {
