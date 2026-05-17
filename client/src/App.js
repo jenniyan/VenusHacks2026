@@ -185,6 +185,7 @@ function App() {
               history={visibleHistory}
               threshold={policy.overloadThreshold}
               onUpdate={loadBackendData}
+              timeWindow={timeWindow}
             />
           )}
           {route === "team" && (
