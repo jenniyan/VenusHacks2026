@@ -28,6 +28,7 @@ const app = new App({
 // Listens to all plain user messages, classifies them, and sends a private suggestion to the sender.
 app.message(async ({ message, client }) => {
   try {
+    console.log(`[lumin] raw message — subtype=${message.subtype ?? "none"} text="${message.text?.slice(0, 60)}"`);
     if (!message.text || message.subtype) return;
 
     const analysis = await analyzeMessage(message.text);
@@ -231,6 +232,18 @@ app.command("/lumin-summary", async ({ ack, respond }) => {
   });
 });
 
+app.error((error) => {
+  console.error("[lumin] app error:", error);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[lumin] uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[lumin] unhandled rejection:", reason);
+});
+
 await app.start();
 
 const { members: slackMembers } = await app.client.users.list();
@@ -238,7 +251,12 @@ const humans = slackMembers.filter(
   (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT"
 );
 await syncTeamMembers(humans);
-console.log(`Lumin is running with private ephemeral messages. Synced ${humans.length} team members.`);
+console.log(`Lumin is running. Synced ${humans.length} team members.`);
+
+// heartbeat — logs every 60s so you can confirm the bot is still alive
+setInterval(() => {
+  console.log(`[lumin] alive — ${new Date().toISOString()}`);
+}, 60_000);
 
 async function sendLuminMessage({ client, channel, user, text, blocks }) {
   await client.chat.postEphemeral({
