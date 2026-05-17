@@ -50,11 +50,6 @@ function Dashboard({ history, threshold }) {
             Lumin tracks task history to identify imbalance and suggest fairer assignments.
           </div>
         </div>
-        <div className="right-meta">
-          <div>Workspace · <b>Live backend</b></div>
-          <div>Window · <b>Last 30 days</b></div>
-          <div>Updated · <b>live</b></div>
-        </div>
       </div>
 
       <Alert overloaded={overloaded} threshold={threshold} top={top} byPerson={byPerson} />
