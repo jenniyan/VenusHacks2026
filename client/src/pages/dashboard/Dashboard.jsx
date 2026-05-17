@@ -46,7 +46,9 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
 
   const windowLabel = timeWindow === "all" ? "All time" : `${timeWindow}d`;
 
-  const teamStatus = giniVal <= 0.25 ? "great!" : giniVal <= 0.5 ? "just okay." : "poorly...";
+  const statusKey = giniVal <= 0.25 ? "great" : giniVal <= 0.5 ? "ok" : "poor";
+  const teamStatus = statusKey === "great" ? "great!" : statusKey === "ok" ? "just okay." : "poorly...";
+  const statusImage = `/${statusKey}_plant.png`;
 
   return (
     <div className="stack">
@@ -80,7 +82,7 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
           />
         </Card>
         <Card title={`Your team is doing ${teamStatus}`}>
-          
+          <img src={statusImage} alt={`${statusKey} plant`} style={{ width: "100%", height: 120, objectFit: "contain" }} />
         </Card>
       </div>
 
