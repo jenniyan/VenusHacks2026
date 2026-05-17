@@ -32,6 +32,7 @@ app.error(async (error) => {
 // Listens to all plain user messages, classifies them, and sends a private suggestion to the sender.
 app.message(async ({ message, client }) => {
   try {
+    console.log(`[lumin] raw message — subtype=${message.subtype ?? "none"} text="${message.text?.slice(0, 60)}"`);
     if (!message.text || message.subtype) return;
 
     const analysis = await analyzeMessage(message.text);
@@ -239,8 +240,21 @@ app.command("/lumin-summary", async ({ ack, respond }) => {
   });
 });
 
+app.error((error) => {
+  console.error("[lumin] app error:", error);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[lumin] uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[lumin] unhandled rejection:", reason);
+});
+
 await app.start();
 startHealthCheck(app.client);
+
 
 try {
   const { members: slackMembers } = await app.client.users.list();
@@ -249,9 +263,13 @@ try {
   );
   await syncTeamMembers(humans);
   console.log(`Lumin is running with private ephemeral messages. Synced ${humans.length} team members.`);
+  setInterval(() => {
+    console.log(`[lumin] alive — ${new Date().toISOString()}`);
+  }, 60_000);
 } catch (error) {
   console.error("[lumin] Bot is running, but initial Slack roster sync failed:", error);
 }
+
 
 async function sendLuminMessage({ client, channel, user, text, blocks }) {
   await client.chat.postEphemeral({

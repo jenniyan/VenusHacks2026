@@ -8,7 +8,7 @@ import Categories from "./components/Categories";
 import Distribution from "./components/Distribution";
 import Outliers from "./components/Outliers";
 
-function Dashboard({ history, threshold, onUpdate }) {
+function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -33,12 +33,18 @@ function Dashboard({ history, threshold, onUpdate }) {
   const byCategory = {};
   for (const t of history) byCategory[t.category] = (byCategory[t.category] || 0) + 1;
 
-  // 30-day spark — count tasks per 3-day bucket
+  // spark — 10 buckets scaled to the active time window
+  const windowDays = timeWindow === "all"
+    ? Math.max(...history.map(t => t.days ?? 0), 30)
+    : timeWindow;
+  const bucketSize = Math.max(1, Math.ceil(windowDays / 10));
   const buckets = Array(10).fill(0);
   for (const t of history) {
-    const b = Math.min(9, Math.floor(t.days / 3));
+    const b = Math.min(9, Math.floor((t.days ?? 0) / bucketSize));
     buckets[9 - b]++;
   }
+
+  const windowLabel = timeWindow === "all" ? "All time" : `${timeWindow}d`;
 
   return (
     <div className="stack">
@@ -46,7 +52,7 @@ function Dashboard({ history, threshold, onUpdate }) {
         <div>
           <h1>Equity Console</h1>
           <div className="sub">
-            Distribution of non-promotable tasks across the team in the last 30 days.
+            Distribution of non-promotable tasks across the team · {windowLabel}.
             Lumin tracks task history to identify imbalance and suggest fairer assignments.
           </div>
         </div>
@@ -56,12 +62,11 @@ function Dashboard({ history, threshold, onUpdate }) {
 
       {/* top stat row */}
       <div className="grid g-3">
-        <Card title="Total NPTs · 30d">
+        <Card title={`Total NPTs · ${windowLabel}`}>
           <Stat
             value={total}
             label=""
             sparkData={buckets}
-            delta={<>vs prev. 30d <b>+18%</b></>}
             deltaKind="up"
           />
         </Card>
