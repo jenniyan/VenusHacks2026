@@ -92,7 +92,7 @@ function Dashboard({ history, threshold }) {
             CATEGORY_COLOR={CATEGORY_COLOR}
           />
 
-          <Outliers top={top} bottom={bottom} byPerson={byPerson} />
+          {/* <Outliers top={top} bottom={bottom} byPerson={byPerson} /> */}
         </div>
       </div>
 
