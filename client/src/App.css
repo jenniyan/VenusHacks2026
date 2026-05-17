@@ -447,6 +447,41 @@ textarea {
   background: rgba(255, 255, 255, 0.5);
 }
 
+.sort-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.56);
+  gap: 2px;
+}
+
+.sort-toggle button {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--mute);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 10px;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.sort-toggle button:hover {
+  color: var(--ink-2);
+  transform: translateY(-1px);
+}
+
+.sort-toggle button[data-active="true"] {
+  background: var(--signal-soft);
+  color: var(--signal);
+}
+
 .swatch {
   width: 10px;
   height: 10px;
