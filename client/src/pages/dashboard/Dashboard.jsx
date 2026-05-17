@@ -57,12 +57,14 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
           <h1>Equity Console</h1>
           <div className="sub">
             Distribution of non-promotable tasks across the team · {windowLabel}.
-            Lumin tracks task history to identify imbalance and suggest fairer assignments.
+            Fair& tracks task history to identify imbalance and suggest fairer assignments.
           </div>
         </div>
       </div>
 
-      <Alert overloaded={overloaded} threshold={threshold} top={top} byPerson={byPerson} />
+      {timeWindow !== "all" && (
+        <Alert overloaded={overloaded} threshold={threshold} top={top} byPerson={byPerson} />
+      )}
 
       {/* top stat row */}
       <div className="grid g-3">

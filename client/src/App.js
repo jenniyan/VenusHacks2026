@@ -133,31 +133,26 @@ function App() {
               data-active={route === item.id}
               onClick={() => setRoute(item.id)}
             >
-              <span className="nav-dot" />
               {item.label}
               {item.count != null && <span className="nav-count">{item.count}</span>}
             </div>
           ))}
         </div>
 
-        <div className="nav-section">Signals</div>
-        <div className="nav signals-nav">
-          <div className="nav-item">
-            <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
-            Imbalance
-            <span className="nav-count">{overloaded}</span>
-          </div>
-          <div className="nav-item">
-            <span className="nav-dot" style={{ background: "var(--c-good)" }} />
-            Available
-            <span className="nav-count">
-              {TEAM.filter((person) => (byPerson[person.id] || 0) <= 1).length}
-            </span>
-          </div>
-          <div className="nav-item">
-            <span className="nav-dot" />
-            Gini index
-            <span className="nav-count mono">{ginVal.toFixed(2)}</span>
+        
+        <div className="sidebar-foot">
+          <div className="nav-section">Signals</div>
+          <div className="nav signals-nav">
+            <div className="nav-item">
+              <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
+              Overloaded Members
+              <span className="nav-count">{overloaded}</span>
+            </div>
+            <div className="nav-item">
+              <span className="nav-dot" />
+              Gini index
+              <span className="nav-count mono">{ginVal.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       </aside>
