@@ -67,6 +67,9 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 												const segment = (
 													<div
 														key={category.id}
+														className="bar-seg"
+														data-tooltip={`${category.label}: ${value}`}
+														tabIndex={0}
 														style={{
 															position: "absolute",
 															top: 0,
@@ -75,7 +78,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 															width: `${segPct}%`,
 															background: CATEGORY_COLOR[category.id],
 														}}
-														title={`${category.label}: ${value}`}
+														aria-label={`${category.label}: ${value} NPT${value === 1 ? "" : "s"}`}
 													/>
 												);
 												left += segPct;

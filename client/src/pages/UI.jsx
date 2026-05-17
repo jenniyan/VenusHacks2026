@@ -117,12 +117,14 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
               <div
                 key={cat.id}
                 className="bar-seg"
+                data-tooltip={`${cat.label}: ${v}`}
+                tabIndex={0}
                 style={{
                   width: `${segPct}%`,
                   height: "100%",
                   backgroundColor: CATEGORY_COLOR[cat.id],
                 }}
-                title={`${cat.label}: ${v}`}
+                aria-label={`${cat.label}: ${v} NPT${v === 1 ? "" : "s"}`}
               />
             );
             return el;
