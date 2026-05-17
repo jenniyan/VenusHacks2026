@@ -21,9 +21,55 @@ export const CATEGORIES = [
   { slug: "other", label: "Other" },
 ];
 
+const FAST_NPT_RULES = [
+  {
+    category: "onboarding",
+    taskTitle: "Onboard new intern",
+    pattern: /\b(onboard|onboarding|new\s+(intern|hire|teammate|member)|ramp)\b/i,
+    explanation: "it asks someone to help onboard or ramp up a new teammate.",
+  },
+  {
+    category: "notes",
+    taskTitle: "Take meeting notes",
+    pattern: /\b(take|write|grab|do|make)\s+(meeting\s+)?notes?\b|\brecap\b|\bsummar(y|ize)\b/i,
+    explanation: "it asks someone to capture notes or a recap, which is recurring team support work.",
+  },
+  {
+    category: "scheduling",
+    taskTitle: "Schedule team meeting",
+    pattern: /\b(schedule|book|calendar|room|poll|availability|reservation|reserve)\b/i,
+    explanation: "it asks someone to coordinate timing, booking, or logistics for the team.",
+  },
+  {
+    category: "social",
+    taskTitle: "Plan team social event",
+    pattern: /\b(organize|plan|coordinate|set\s+up|host)\b.*\b(lunch|dinner|socia[l]?|party|celebration|event|outing|happy\s+hour)\b|\b(team\s+)?(lunch|dinner|socia[l]?|party|celebration|outing|happy\s+hour)\b/i,
+    explanation: "it asks someone to plan or organize a team social task.",
+  },
+  {
+    category: "other",
+    taskTitle: "Create team support materials",
+    pattern: /\b(make|create|design)\b.*\b(poster|flyer|banner|slide|slides|sign|signage)\b/i,
+    explanation: "it asks someone to create team support materials.",
+  },
+];
+
+function fastClassifyMessage(text) {
+  const cleaned = text.replace(/<@[A-Z0-9]+>/gi, "").trim();
+  const match = FAST_NPT_RULES.find((rule) => rule.pattern.test(cleaned));
+  if (!match) return null;
+
+  return {
+    isNpt: true,
+    category: match.category,
+    taskTitle: match.taskTitle,
+    explanation: match.explanation,
+  };
+}
+
 // Sends message text to the LLM pipeline and returns the classification result.
 export async function analyzeMessage(text) {
-  return classifyMessage(text, CATEGORIES);
+  return fastClassifyMessage(text) || classifyMessage(text, CATEGORIES);
 }
 
 // Fetches all team members and their task counts from the DB in a single call.
