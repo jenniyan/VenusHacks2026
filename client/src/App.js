@@ -116,9 +116,11 @@ function App() {
       <div className="app">
       <aside className="sidebar">
         <div className="brand">
-          <div>
-            <div className="brand-mark">lumin</div>
-            <div className="brand-tag">equity console</div>
+          <div className="brand-mark">
+            <img src="/fair%26.png" alt="fair logo" style={{ maxWidth: "60%", height: "auto", marginBottom: "0px" }} />
+          </div>
+          <div className="brand-tag" style={{ marginTop: "0px" }}>
+            equity console
           </div>
         </div>
 
