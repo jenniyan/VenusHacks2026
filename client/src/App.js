@@ -16,7 +16,11 @@ import "./pages/team/Team";
 const { Dashboard, Team } = window;
 const THEME = "light";
 const DENSITY = "regular";
-const IMBALANCE_THRESHOLD = 6;
+const DEFAULT_POLICY = {
+  overloadThreshold: 6,
+  lookbackDays: 30,
+  excludeManagers: true,
+};
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 const TIME_WINDOWS = [
   { value: 7, label: "Last 7 days" },
@@ -30,6 +34,7 @@ function App() {
   const [route, setRoute] = useState("dashboard");
   const [teamMembers, setTeamMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [policy, setPolicy] = useState(DEFAULT_POLICY);
   const [loadState, setLoadState] = useState({ loading: true, error: null });
   const [timeWindow, setTimeWindow] = useState(30);
 
@@ -74,22 +79,24 @@ function App() {
     tone: ((index % 8) + 1),
   })), [teamMembers]);
 
-  const history = useMemo(() => tasks, [tasks]);
+  const history = useMemo(
+    () => tasks.filter((task) => (task.days ?? 0) <= policy.lookbackDays),
+    [tasks, policy.lookbackDays],
+  );
   const visibleHistory = useMemo(() => {
     if (timeWindow === "all") return history;
-    return history.filter((task) => task.days <= timeWindow);
+    return history.filter((task) => (task.days ?? 0) <= timeWindow);
   }, [history, timeWindow]);
-
   const luminState = useMemo(
-    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: history }),
-    [runtimeTeam, history],
+    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: visibleHistory }),
+    [runtimeTeam, visibleHistory],
   );
 
   const { TEAM, gini, loadByPerson } = luminState;
   const byPerson = loadByPerson(visibleHistory);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
-    (person) => (byPerson[person.id] || 0) >= IMBALANCE_THRESHOLD,
+    (person) => (byPerson[person.id] || 0) >= policy.overloadThreshold,
   ).length;
 
   const nav = [
@@ -125,7 +132,7 @@ function App() {
         </div>
 
         <div className="nav-section">Signals</div>
-        <div className="nav">
+        <div className="nav signals-nav">
           <div className="nav-item">
             <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
             Imbalance
@@ -174,12 +181,17 @@ function App() {
           {route === "dashboard" && (
             <Dashboard
               history={visibleHistory}
-              threshold={IMBALANCE_THRESHOLD}
+              threshold={policy.overloadThreshold}
               onUpdate={loadBackendData}
             />
           )}
           {route === "team" && (
-            <Team history={visibleHistory} threshold={IMBALANCE_THRESHOLD} />
+            <Team
+              history={visibleHistory}
+              threshold={policy.overloadThreshold}
+              policy={policy}
+              onPolicyChange={setPolicy}
+            />
           )}
           {loadState.error && (
             <div className="card" style={{ borderColor: "var(--c-signal)", marginTop: 16 }}>
