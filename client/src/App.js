@@ -112,7 +112,7 @@ function App() {
         </div>
 
         <div className="nav-section">Signals</div>
-        <div className="nav">
+        <div className="nav signals-nav">
           <div className="nav-item">
             <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
             Imbalance
