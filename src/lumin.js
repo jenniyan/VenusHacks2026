@@ -14,7 +14,7 @@ export const CATEGORIES = [
   { slug: "social", label: "Social planning" },
   { slug: "coordination", label: "Team coordination" },
   { slug: "recognition", label: "Recognition & morale" },
-  { slug: "culture_admin", label: "Culture / admin" },
+  { slug: "culture_admin", label: "Culture & admin" },
   { slug: "interviewing", label: "Interviewing volume" },
   { slug: "docs_housekeeping", label: "Docs housekeeping" },
   { slug: "support_triage", label: "Support triage" },
