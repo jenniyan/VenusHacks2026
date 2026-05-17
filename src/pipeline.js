@@ -10,7 +10,8 @@ An NPT is any task that keeps the team running but is not core technical or role
 - Scheduling, booking rooms, polling availability, managing calendars
 - Onboarding new hires, interns, or contractors
 - Mentoring, coaching, or supporting a colleague's growth
-- Planning or organizing team events, lunches, celebrations, office decorations, or creative work like making posters, flyers, or signage for team events
+- Planning or organizing team events, lunches, celebrations, or office decorations
+- Creative or design work such as making posters, flyers, banners, slides, or signage — regardless of what they are for
 - Team coordination such as tracking OOO, managing rotations, or cross-team logistics
 - Recognition tasks like writing kudos, organizing farewell gifts, or birthday cards
 - Culture and admin work such as DEI committees, ERG participation, or hiring panel duties
@@ -18,9 +19,14 @@ An NPT is any task that keeps the team running but is not core technical or role
 - Docs housekeeping like updating wikis, fixing broken links, or rewriting runbooks
 - Interviewing beyond one's normal share of loops or debriefs
 
-A message is an NPT request if someone is being asked to do any of the above — even if phrased casually, informally, or with slang (e.g. "plz make a poster", "can u grab lunch reservations", "could someone write up the recap", "anyone down to plan the thing").
+A message is an NPT request if someone is being asked to do any of the above — even if phrased casually, informally, or with slang. Examples that ARE NPTs:
+- "make a poster", "make a poster now", "make a poster for the party", "plz make a poster"
+- "can u grab lunch reservations", "could someone write up the recap", "anyone down to plan the thing"
+- "can you onboard the new hire", "who wants to take notes today", "can someone book a room"
 
-A message is NOT an NPT if it is casual conversation, a technical question, a code review request, a feature discussion, or work that is clearly part of someone's defined job responsibilities.
+When in doubt, classify as an NPT. It is always better to flag something than to miss invisible labor.
+
+A message is NOT an NPT if it is casual conversation, a technical question, a code review request, a feature discussion, presenting or pitching work, or tasks that are clearly part of someone's defined job responsibilities.
 `;
 
 const CLASSIFY_TOOL = {
@@ -63,7 +69,7 @@ function buildPrompt(text, categories) {
 // Sends the message to Claude with forced tool use and returns the structured classification.
 export async function classifyMessage(text, categories) {
   const response = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: "claude-sonnet-4-6",
     max_tokens: 256,
     system: SYSTEM_PROMPT,
     tools: [CLASSIFY_TOOL],
