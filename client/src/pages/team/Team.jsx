@@ -27,11 +27,6 @@ function Team({ history, threshold }) {
             running NPT load and per-category breakdown for the active window.
           </div>
         </div>
-        <div className="right-meta">
-          <div>Members · <b>{TEAM.length}</b></div>
-          <div>Rotation pool · <b>{TEAM.length - 1}</b></div>
-          <div>Threshold · <b>≥ {threshold} flagged</b></div>
-        </div>
       </div>
 
       <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
