@@ -791,6 +791,14 @@ textarea {
   color: var(--signal);
 }
 
+.assignments-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .swatch {
   width: 10px;
   height: 10px;
