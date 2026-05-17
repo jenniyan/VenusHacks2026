@@ -16,13 +16,18 @@ import "./pages/team/Team";
 const { Dashboard, Team } = window;
 const THEME = "light";
 const DENSITY = "regular";
-const IMBALANCE_THRESHOLD = 6;
+const DEFAULT_POLICY = {
+  overloadThreshold: 6,
+  lookbackDays: 30,
+  excludeManagers: true,
+};
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 
 function App() {
   const [route, setRoute] = useState("dashboard");
   const [teamMembers, setTeamMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [policy, setPolicy] = useState(DEFAULT_POLICY);
   const [loadState, setLoadState] = useState({ loading: true, error: null });
 
   useEffect(() => {
@@ -66,7 +71,10 @@ function App() {
     tone: ((index % 8) + 1),
   })), [teamMembers]);
 
-  const history = useMemo(() => tasks, [tasks]);
+  const history = useMemo(
+    () => tasks.filter((task) => (task.days ?? 0) <= policy.lookbackDays),
+    [tasks, policy.lookbackDays],
+  );
   const luminState = useMemo(
     () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: history }),
     [runtimeTeam, history],
@@ -76,7 +84,7 @@ function App() {
   const byPerson = loadByPerson(history);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
-    (person) => (byPerson[person.id] || 0) >= IMBALANCE_THRESHOLD,
+    (person) => (byPerson[person.id] || 0) >= policy.overloadThreshold,
   ).length;
 
   const nav = [
@@ -140,16 +148,21 @@ function App() {
           </div>
           <div className="topbar-right">
             <span style={{ opacity: 0.5 }}>·</span>
-            <span>{loadState.loading ? "loading backend" : loadState.error ? "backend error" : "30d window"}</span>
+            <span>{loadState.loading ? "loading backend" : loadState.error ? "backend error" : `${policy.lookbackDays}d window`}</span>
           </div>
         </div>
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} onUpdate={loadBackendData} />
+            <Dashboard history={history} threshold={policy.overloadThreshold} onUpdate={loadBackendData} />
           )}
           {route === "team" && (
-            <Team history={history} threshold={IMBALANCE_THRESHOLD} />
+            <Team
+              history={history}
+              threshold={policy.overloadThreshold}
+              policy={policy}
+              onPolicyChange={setPolicy}
+            />
           )}
           {loadState.error && (
             <div className="card" style={{ borderColor: "var(--c-signal)", marginTop: 16 }}>

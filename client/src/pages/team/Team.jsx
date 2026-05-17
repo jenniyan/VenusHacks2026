@@ -5,7 +5,7 @@ import Categories from "./components/Categories";
 import Policy from "./components/Policy";
 import Roster from "./components/Roster";
 
-function Team({ history, threshold }) {
+function Team({ history, threshold, policy, onPolicyChange }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -32,7 +32,7 @@ function Team({ history, threshold }) {
       <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
 
       <div className="grid g-2">
-        <Policy threshold={threshold} />
+        <Policy policy={policy} onPolicyChange={onPolicyChange} />
         <Categories NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} />
       </div>
     </div>
