@@ -5,7 +5,7 @@ import Categories from "./components/Categories";
 import Policy from "./components/Policy";
 import Roster from "./components/Roster";
 
-function Team({ history, threshold, selectedWindow = "30d" }) {
+function Team({ history, threshold, policy, onPolicyChange }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -13,31 +13,22 @@ function Team({ history, threshold, selectedWindow = "30d" }) {
     loadByPerson,
     loadByPersonCategory,
   } = useLuminData();
-  const windowMap = { "1d": 1, "7d": 7, "14d": 14, "30d": 30, "90d": 90 };
-  const filteredHistory = selectedWindow === "all"
-    ? history
-    : history.filter((t) => (typeof t.days === "number" ? t.days <= (windowMap[selectedWindow] || 30) : true));
-
-  const byPerson = loadByPerson(filteredHistory);
-  const byPC = loadByPersonCategory(filteredHistory);
+  const byPerson = loadByPerson(history);
+  const byPC = loadByPersonCategory(history);
   const max = Math.max(...TEAM.map(p => byPerson[p.id] || 0), 1);
 
   return (
     <div className="stack">
       <div className="page-h">
         <div>
-          <h1>Team</h1>
-          <div className="sub">
-            {TEAM.length} members · roster used for fair-rotation lookups. Each row shows the member's
-            running NPT load and per-category breakdown for the active window ({selectedWindow === "all" ? "all time" : selectedWindow}).
-          </div>
+          <h1>Team <span style={{ color: "var(--c-mute)", fontSize: 28 }}>({TEAM.length} members)</span></h1>
         </div>
       </div>
 
       
 
       <div className="grid g-2">
-        <Policy threshold={threshold} />
+        <Policy policy={policy} onPolicyChange={onPolicyChange} />
         <Categories NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} />
       </div>
 

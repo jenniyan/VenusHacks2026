@@ -6,8 +6,9 @@ import Alert from "./components/Alert";
 import Assignments from "./components/Assignments";
 import Categories from "./components/Categories";
 import Distribution from "./components/Distribution";
+import Outliers from "./components/Outliers";
 
-function Dashboard({ history, threshold, selectedWindow = "30d" }) {
+function Dashboard({ history, threshold, onUpdate }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -17,29 +18,24 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
     gini,
   } = useLuminData();
 
-  // apply active time window filter to history
-  const windowMap = { "1d": 1, "7d": 7, "14d": 14, "30d": 30, "90d": 90 };
-  const filteredHistory = selectedWindow === "all"
-    ? history
-    : history.filter((t) => (typeof t.days === "number" ? t.days <= (windowMap[selectedWindow] || 30) : true));
-
-  const byPerson = loadByPerson(filteredHistory);
-  const byPC = loadByPersonCategory(filteredHistory);
+  const byPerson = loadByPerson(history);
+  const byPC = loadByPersonCategory(history);
   const counts = TEAM.map(p => byPerson[p.id] || 0);
   const sorted = [...TEAM].sort((a, b) => (byPerson[b.id] || 0) - (byPerson[a.id] || 0));
   const max = Math.max(...counts, 1);
   const total = counts.reduce((a, b) => a + b, 0);
   const top = sorted[0];
+  const bottom = sorted[sorted.length - 1];
   const giniVal = gini(counts);
   const overloaded = counts.filter(c => c >= threshold).length;
 
   // categories aggregate
   const byCategory = {};
-  for (const t of filteredHistory) byCategory[t.category] = (byCategory[t.category] || 0) + 1;
+  for (const t of history) byCategory[t.category] = (byCategory[t.category] || 0) + 1;
 
-  // spark — count tasks per 3-day bucket for visualization (uses 30-day buckets)
+  // 30-day spark — count tasks per 3-day bucket
   const buckets = Array(10).fill(0);
-  for (const t of filteredHistory) {
+  for (const t of history) {
     const b = Math.min(9, Math.floor(t.days / 3));
     buckets[9 - b]++;
   }
@@ -50,8 +46,8 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
         <div>
           <h1>Equity Console</h1>
           <div className="sub">
-            {`Distribution of non-promotable tasks across the team in the last ${selectedWindow === "all" ? "all time" : (selectedWindow === "1d" ? "1 day" : (selectedWindow === "7d" ? "7 days" : "30 days"))}.`}
-            {' '}Lumin tracks task history to identify imbalance and suggest fairer assignments.
+            Distribution of non-promotable tasks across the team in the last 30 days.
+            Lumin tracks task history to identify imbalance and suggest fairer assignments.
           </div>
         </div>
       </div>
@@ -60,7 +56,7 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
 
       {/* top stat row */}
       <div className="grid g-3">
-        <Card title={`Total NPTs · ${selectedWindow === "all" ? "all" : selectedWindow}`}>
+        <Card title="Total NPTs · 30d">
           <Stat
             value={total}
             label=""
@@ -101,10 +97,10 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
       </div>
 
       <Assignments
-        history={filteredHistory}
-        byPerson={byPerson}
+        history={history}
         NPT_CATEGORIES={NPT_CATEGORIES}
         CATEGORY_COLOR={CATEGORY_COLOR}
+        onUpdate={onUpdate}
       />
     </div>
   );

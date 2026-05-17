@@ -233,35 +233,6 @@ textarea {
   gap: 18px;
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 18px 22px;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.84);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 16px 38px rgba(70, 26, 113, 0.08);
-}
-
-.crumbs {
-  color: var(--ink-2);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  color: var(--ink-2);
-}
-
 .window-toolbar {
   display: flex;
   align-items: center;
@@ -329,40 +300,6 @@ textarea {
 .window-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* Time window select: minimal by default, rounded purple pill background on hover/focus */
-.time-window-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background: transparent;
-  border: none;
-  color: inherit;
-  padding: 4px 8px;
-  font-weight: 600;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M6 8L0 0h12L6 8z' fill='%2351366b'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 12px 8px;
-  padding-right: 24px;
-}
-
-.time-window-select:focus {
-  outline: none;
-}
-
-/* show rounded purple pill background on hover/focus, keep text unchanged */
-.time-window-select:hover,
-.time-window-select:focus {
-  background-color: #d9c4ea;
-  border-radius: 999px;
-  padding-right: 24px;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M6 8L0 0h12L6 8z' fill='%23ffffff'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 12px 8px;
 }
 
 .content {
@@ -853,10 +790,10 @@ textarea {
   transition: background 120ms ease, color 120ms ease, transform 120ms ease;
 }
 
-/* .sort-toggle button:hover {
+.sort-toggle button:hover {
   color: var(--ink-2);
   transform: translateY(-1px);
-} */
+}
 
 .sort-toggle button[data-active="true"] {
   background: var(--signal-soft);
