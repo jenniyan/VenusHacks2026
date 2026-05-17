@@ -1,4 +1,4 @@
-import { Card, Pill, StackedBar } from "../../UI";
+import { Card, StackedBar } from "../../UI";
 import { useMemo, useState } from "react";
 
 export default function Distribution({ sorted, byPerson, byPC, max, threshold }) {
@@ -12,12 +12,9 @@ export default function Distribution({ sorted, byPerson, byPC, max, threshold })
 			}),
 		[byPerson, sortDir, sorted],
 	);
-	const sortLabel = sortDir === "desc" ? "most to least" : "least to most";
-
 	return (
 		<Card
 			title="NPT distribution by person"
-			meta={""}
 			action={
 				<span style={{ display: "flex", gap: 6, alignItems: "center" }}>
 					<SortToggle sortDir={sortDir} onChange={setSortDir} />
