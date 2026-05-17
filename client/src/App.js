@@ -18,12 +18,20 @@ const THEME = "light";
 const DENSITY = "regular";
 const IMBALANCE_THRESHOLD = 6;
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
+const TIME_WINDOWS = [
+  { value: 7, label: "Last 7 days" },
+  { value: 14, label: "Last 14 days" },
+  { value: 30, label: "Last 30 days" },
+  { value: 90, label: "Last 90 days" },
+  { value: "all", label: "All time" },
+];
 
 function App() {
   const [route, setRoute] = useState("dashboard");
   const [teamMembers, setTeamMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loadState, setLoadState] = useState({ loading: true, error: null });
+  const [timeWindow, setTimeWindow] = useState(30);
 
   useEffect(() => {
     document.documentElement.dataset.theme = THEME;
@@ -67,13 +75,18 @@ function App() {
   })), [teamMembers]);
 
   const history = useMemo(() => tasks, [tasks]);
+  const visibleHistory = useMemo(() => {
+    if (timeWindow === "all") return history;
+    return history.filter((task) => task.days <= timeWindow);
+  }, [history, timeWindow]);
+
   const luminState = useMemo(
     () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: history }),
     [runtimeTeam, history],
   );
 
   const { TEAM, gini, loadByPerson } = luminState;
-  const byPerson = loadByPerson(history);
+  const byPerson = loadByPerson(visibleHistory);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
     (person) => (byPerson[person.id] || 0) >= IMBALANCE_THRESHOLD,
@@ -134,22 +147,39 @@ function App() {
       </aside>
 
       <main className="main">
-        <div className="topbar">
-          <div className="crumbs">
-            lumin / {nav.find((item) => item.id === route)?.label}
+        <div className="window-toolbar">
+          <div>
+            <div className="window-label">
+              {loadState.loading ? "Loading backend" : "Time window"}
+            </div>
           </div>
-          <div className="topbar-right">
-            <span style={{ opacity: 0.5 }}>·</span>
-            <span>{loadState.loading ? "loading backend" : loadState.error ? "backend error" : "30d window"}</span>
-          </div>
+          <select
+            className="window-select"
+            value={timeWindow}
+            onChange={(event) => {
+              const value = event.target.value === "all" ? "all" : Number(event.target.value);
+              setTimeWindow(value);
+            }}
+            disabled={loadState.loading || Boolean(loadState.error)}
+          >
+            {TIME_WINDOWS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} onUpdate={loadBackendData} />
+            <Dashboard
+              history={visibleHistory}
+              threshold={IMBALANCE_THRESHOLD}
+              onUpdate={loadBackendData}
+            />
           )}
           {route === "team" && (
-            <Team history={history} threshold={IMBALANCE_THRESHOLD} />
+            <Team history={visibleHistory} threshold={IMBALANCE_THRESHOLD} />
           )}
           {loadState.error && (
             <div className="card" style={{ borderColor: "var(--c-signal)", marginTop: 16 }}>
