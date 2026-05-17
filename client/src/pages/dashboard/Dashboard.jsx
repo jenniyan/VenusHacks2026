@@ -8,7 +8,7 @@ import Categories from "./components/Categories";
 import Distribution from "./components/Distribution";
 import Outliers from "./components/Outliers";
 
-function Dashboard({ history, threshold }) {
+function Dashboard({ history, threshold, onUpdate }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -98,9 +98,9 @@ function Dashboard({ history, threshold }) {
 
       <Assignments
         history={history}
-        byPerson={byPerson}
         NPT_CATEGORIES={NPT_CATEGORIES}
         CATEGORY_COLOR={CATEGORY_COLOR}
+        onUpdate={onUpdate}
       />
     </div>
   );
