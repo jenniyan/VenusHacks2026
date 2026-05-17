@@ -31,9 +31,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 					<tr>
 						<th>Member</th>
 						<th>Role</th>
-						<th>TZ</th>
-						<th>Joined</th>
-						<th className="right">NPTs · 30d</th>
+						<th className="right">NPTs</th>
 						<th style={{ width: 240 }}>Breakdown</th>
 						<th className="right">Status</th>
 					</tr>
@@ -57,8 +55,6 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 									</div>
 								</td>
 								<td>{person.role}</td>
-								<td className="mono" style={{ color: "var(--c-mute)" }}>{person.tz}</td>
-								<td className="mono" style={{ color: "var(--c-mute)" }}>{person.joined}</td>
 								<td className="right num">{total}</td>
 								<td>
 									<div style={{ position: "relative", height: 14, background: "var(--c-panel-2)", border: "1px solid var(--c-line)", borderRadius: 2, overflow: "hidden" }}>
