@@ -142,15 +142,8 @@ function App() {
         <div className="nav signals-nav">
           <div className="nav-item">
             <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
-            Imbalance
+            Overloaded Members
             <span className="nav-count">{overloaded}</span>
-          </div>
-          <div className="nav-item">
-            <span className="nav-dot" style={{ background: "var(--c-good)" }} />
-            Available
-            <span className="nav-count">
-              {TEAM.filter((person) => (byPerson[person.id] || 0) <= 1).length}
-            </span>
           </div>
           <div className="nav-item">
             <span className="nav-dot" />
