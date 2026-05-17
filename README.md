@@ -1,6 +1,7 @@
-# Lumin
 
-Lumin is a small prototype project for detecting and rebalancing "invisible labor" requests. This repository contains:
+# Lum&
+
+Lum& is a small prototype project for detecting and rebalancing "invisible labor" requests. This repository contains:
 
 - `client/` — React UI (Equity console) used to visualize task distribution and team policies.
 - `server/` — Local API used by the client for demo data.

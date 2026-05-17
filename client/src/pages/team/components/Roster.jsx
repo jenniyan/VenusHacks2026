@@ -31,7 +31,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 	function handleExportCsv() {
 		const csv = buildRosterCsv(reportRows, NPT_CATEGORIES);
 		const date = new Date().toISOString().slice(0, 10);
-		downloadCsv(csv, `lumin-npt-roster-report-${date}.csv`);
+		downloadCsv(csv, `lum-npt-roster-report-${date}.csv`);
 	}
 
 	return (

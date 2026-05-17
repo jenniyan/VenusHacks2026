@@ -117,7 +117,7 @@ function App() {
       <aside className="sidebar">
         <div className="brand">
           <div>
-            <div className="brand-mark">lumin</div>
+            <div className="brand-mark">Lum&</div>
             <div className="brand-tag">equity console</div>
           </div>
         </div>
@@ -131,24 +131,26 @@ function App() {
               data-active={route === item.id}
               onClick={() => setRoute(item.id)}
             >
-              <span className="nav-dot" />
               {item.label}
               {item.count != null && <span className="nav-count">{item.count}</span>}
             </div>
           ))}
         </div>
 
-        <div className="nav-section">Signals</div>
-        <div className="nav signals-nav">
-          <div className="nav-item">
-            <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
-            Overloaded Members
-            <span className="nav-count">{overloaded}</span>
-          </div>
-          <div className="nav-item">
-            <span className="nav-dot" />
-            Gini index
-            <span className="nav-count mono">{ginVal.toFixed(2)}</span>
+        
+        <div className="sidebar-foot">
+          <div className="nav-section">Signals</div>
+          <div className="nav signals-nav">
+            <div className="nav-item">
+              <span className="nav-dot" style={{ background: "var(--c-signal)" }} />
+              Overloaded Members
+              <span className="nav-count">{overloaded}</span>
+            </div>
+            <div className="nav-item">
+              <span className="nav-dot" />
+              Gini index
+              <span className="nav-count mono">{ginVal.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       </aside>

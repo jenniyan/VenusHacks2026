@@ -27,18 +27,18 @@ const app = new App({
 });
 
 app.error(async (error) => {
-  console.error("[lumin] Bolt app error:", error);
+  console.error("[Lum&] Bolt app error:", error);
 });
 
 // Listens to all plain user messages, classifies them, and sends a private suggestion to the sender.
 app.message(async ({ message, client }) => {
   try {
-    console.log(`[lumin] raw message — subtype=${message.subtype ?? "none"} text="${message.text?.slice(0, 60)}"`);
+    console.log(`[Lum&] raw message — subtype=${message.subtype ?? "none"} text="${message.text?.slice(0, 60)}"`);
     if (!message.text || message.subtype) return;
 
     const analysis = await analyzeMessage(message.text);
     if (!analysis.isNpt) {
-      console.log(`[lumin] NOT NPT: "${message.text}" — ${analysis.explanation}`);
+      console.log(`[Lum&] NOT NPT: "${message.text}" — ${analysis.explanation}`);
       return;
     }
 
@@ -67,10 +67,10 @@ app.message(async ({ message, client }) => {
         responseText =
           `This looks like a ${taskLabel}.\n\n` +
           `${warning}` +
-          `Lumin suggests asking *${suggestedPerson.display_name}* next because they currently have the lowest invisible-labor load.`;
+          `Lum& suggests asking *${suggestedPerson.display_name}* next because they currently have the lowest invisible-labor load.`;
       } else {
         responseText +=
-          `\n\nLumin suggests asking *${suggestedPerson.display_name}* next because they currently have the lowest invisible-labor load.`;
+          `\n\nLum& suggests asking *${suggestedPerson.display_name}* next because they currently have the lowest invisible-labor load.`;
       }
     }
 
@@ -131,7 +131,7 @@ app.message(async ({ message, client }) => {
       ],
     });
   } catch (error) {
-    console.error("Lumin failed to send private detection:", error);
+    console.error("Lum& failed to send private detection:", error);
   }
 });
 
@@ -139,8 +139,8 @@ app.message(async ({ message, client }) => {
 app.event("team_join", async ({ event }) => {
   try {
     await syncTeamMembers([event.user]);
-  } catch (error) {
-    console.error("[lumin] Failed to sync new team member:", error);
+    } catch (error) {
+    console.error("[Lum&] Failed to sync new team member:", error);
   }
 });
 
@@ -193,7 +193,7 @@ app.action("assign_suggested", async ({ ack, respond, body, client }) => {
         ],
       });
     } catch (err) {
-      console.error("Lumin failed to post public reassignment notice:", err);
+      console.error("Lum& failed to post public reassignment notice:", err);
     }
   }
 });
@@ -240,7 +240,7 @@ app.command("/lumin-stats", async ({ ack, respond, body }) => {
   try {
     stats = await getPersonStats(userId);
   } catch (err) {
-    console.error("[lumin] /lumin-stats failed:", err);
+    console.error("[Lum&] /lumin-stats failed:", err);
     await respond({ response_type: "ephemeral", text: "Could not load your stats right now. Try again in a moment." });
     return;
   }
@@ -267,7 +267,7 @@ app.command("/lumin-stats", async ({ ack, respond, body }) => {
 
   await respond({
     response_type: "ephemeral",
-    text: `Your Lumin stats — ${total} NPTs total`,
+    text: `Your Lum& stats — ${total} NPTs total`,
     blocks: [
       {
         type: "header",
@@ -308,15 +308,15 @@ app.command("/lumin-summary", async ({ ack, respond }) => {
 });
 
 app.error((error) => {
-  console.error("[lumin] app error:", error);
+  console.error("[Lum&] app error:", error);
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("[lumin] uncaught exception:", err);
+  console.error("[Lum&] uncaught exception:", err);
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("[lumin] unhandled rejection:", reason);
+  console.error("[Lum&] unhandled rejection:", reason);
 });
 
 await app.start();
@@ -329,12 +329,12 @@ try {
     (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT"
   );
   await syncTeamMembers(humans);
-  console.log(`Lumin is running with private ephemeral messages. Synced ${humans.length} team members.`);
+  console.log(`Lum& is running with private ephemeral messages. Synced ${humans.length} team members.`);
   setInterval(() => {
-    console.log(`[lumin] alive — ${new Date().toISOString()}`);
+    console.log(`[Lum&] alive — ${new Date().toISOString()}`);
   }, 60_000);
-} catch (error) {
-  console.error("[lumin] Bot is running, but initial Slack roster sync failed:", error);
+  } catch (error) {
+  console.error("[Lum&] Bot is running, but initial Slack roster sync failed:", error);
 }
 
 
@@ -368,9 +368,9 @@ function startHealthCheck(client) {
   async function checkSlackConnection() {
     try {
       const result = await client.auth.test();
-      console.log(`[lumin] Slack health check ok for ${result.team}`);
+      console.log(`[Lum&] Slack health check ok for ${result.team}`);
     } catch (error) {
-      console.error("[lumin] Slack health check failed:", error);
+      console.error("[Lum&] Slack health check failed:", error);
     }
   }
 

@@ -1,5 +1,5 @@
 {
-  "name": "lumin-slack-bot",
+  "name": "lum-slack-bot",
   "version": "0.1.0",
   "description": "A no-database Slack bot MVP for detecting and rebalancing invisible labor requests.",
   "main": "src/app.js",

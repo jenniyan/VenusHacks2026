@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const SYSTEM_PROMPT = `
-You are Lumin, a workplace equity assistant. Your job is to analyze Slack messages and determine whether they contain a request for a Non-Promotable Task (NPT) — team support work that benefits the group but is rarely recognized or rewarded.
+You are Lum&, a workplace equity assistant. Your job is to analyze Slack messages and determine whether they contain a request for a Non-Promotable Task (NPT) — team support work that benefits the group but is rarely recognized or rewarded.
 
 An NPT is any task that keeps the team running but is not core technical or role-specific work. This includes but is not limited to:
 - Note-taking, scribing, or summarizing meetings
