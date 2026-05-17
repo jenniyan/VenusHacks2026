@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/app.js",
+    "bot:always": "node scripts/run-bot-forever.js",
     "dev": "node --watch src/app.js",
     "server": "node server/index.js",
     "server:dev": "node --watch server/index.js"

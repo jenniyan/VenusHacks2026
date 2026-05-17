@@ -25,6 +25,10 @@ const app = new App({
   socketMode: true,
 });
 
+app.error(async (error) => {
+  console.error("[lumin] Bolt app error:", error);
+});
+
 // Listens to all plain user messages, classifies them, and sends a private suggestion to the sender.
 app.message(async ({ message, client }) => {
   try {
@@ -132,7 +136,11 @@ app.message(async ({ message, client }) => {
 
 // Adds a newly joined workspace member to team_members without requiring a restart.
 app.event("team_join", async ({ event }) => {
-  await syncTeamMembers([event.user]);
+  try {
+    await syncTeamMembers([event.user]);
+  } catch (error) {
+    console.error("[lumin] Failed to sync new team member:", error);
+  }
 });
 
 // Handles the assign button click, writes the task to the DB, and replaces the buttons with a confirmation.
@@ -245,18 +253,23 @@ process.on("unhandledRejection", (reason) => {
 });
 
 await app.start();
+startHealthCheck(app.client);
 
-const { members: slackMembers } = await app.client.users.list();
-const humans = slackMembers.filter(
-  (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT"
-);
-await syncTeamMembers(humans);
-console.log(`Lumin is running. Synced ${humans.length} team members.`);
 
-// heartbeat — logs every 60s so you can confirm the bot is still alive
-setInterval(() => {
-  console.log(`[lumin] alive — ${new Date().toISOString()}`);
-}, 60_000);
+try {
+  const { members: slackMembers } = await app.client.users.list();
+  const humans = slackMembers.filter(
+    (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT"
+  );
+  await syncTeamMembers(humans);
+  console.log(`Lumin is running with private ephemeral messages. Synced ${humans.length} team members.`);
+  setInterval(() => {
+    console.log(`[lumin] alive — ${new Date().toISOString()}`);
+  }, 60_000);
+} catch (error) {
+  console.error("[lumin] Bot is running, but initial Slack roster sync failed:", error);
+}
+
 
 async function sendLuminMessage({ client, channel, user, text, blocks }) {
   await client.chat.postEphemeral({
@@ -280,4 +293,19 @@ async function postPrivateConfirmation({ client, body, text }) {
   }
 
   await client.chat.postEphemeral(payload);
+}
+
+function startHealthCheck(client) {
+  const intervalMs = 5 * 60 * 1000;
+
+  async function checkSlackConnection() {
+    try {
+      const result = await client.auth.test();
+      console.log(`[lumin] Slack health check ok for ${result.team}`);
+    } catch (error) {
+      console.error("[lumin] Slack health check failed:", error);
+    }
+  }
+
+  setInterval(checkSlackConnection, intervalMs);
 }
