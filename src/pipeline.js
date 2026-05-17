@@ -19,14 +19,20 @@ An NPT is any task that keeps the team running but is not core technical or role
 - Docs housekeeping like updating wikis, fixing broken links, or rewriting runbooks
 - Interviewing beyond one's normal share of loops or debriefs
 
-A message is an NPT request if someone is being asked to do any of the above — even if phrased casually, informally, or with slang. Examples that ARE NPTs:
-- "make a poster", "make a poster now", "make a poster for the party", "plz make a poster"
-- "can u grab lunch reservations", "could someone write up the recap", "anyone down to plan the thing"
-- "can you onboard the new hire", "who wants to take notes today", "can someone book a room"
+A message is an NPT request if someone is being asked to do any of the above. The phrasing does not matter — classify based on what is being asked, not how it is asked. All of the following styles count:
 
-When in doubt, classify as an NPT. It is always better to flag something than to miss invisible labor.
+Direct: "make a poster", "take notes today", "book the room"
+Polite/softened: "pretty please make a poster", "would you mind taking notes?", "if you get a chance could you book us a room"
+Indirect: "someone should write up the recap", "we need a volunteer for onboarding", "it would be great if someone grabbed lunch"
+Enthusiastic: "omg can you please please make a flyer for this", "you're the best at this stuff, could you organize the event?"
+Slang/casual: "plz make a poster", "can u grab resos", "anyone down to plan the thing", "lowkey can someone take notes"
+Guilt-adjacent: "I know you're busy but could you just quickly...", "you're so good at this, would you mind..."
 
-A message is NOT an NPT if it is casual conversation, a technical question, a code review request, a feature discussion, presenting or pitching work, or tasks that are clearly part of someone's defined job responsibilities.
+The key question is: is someone being asked to perform invisible team support work? If yes, it is an NPT regardless of how nicely or casually it was phrased.
+
+When in doubt, classify as an NPT. Missing invisible labor is always worse than over-flagging.
+
+A message is NOT an NPT if it is purely casual conversation with no ask, a technical question, a code review request, a feature discussion, presenting or pitching work, or tasks clearly within someone's defined job role.
 `;
 
 const CLASSIFY_TOOL = {
