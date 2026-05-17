@@ -3,7 +3,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import "./App.css";
-import "./pages/data";
+import {
+  buildRuntimeLuminState,
+  normalizeTask,
+  normalizeTeamMember,
+  LuminDataProvider,
+} from "./pages/luminConfig";
 import "./pages/UI";
 import "./pages/dashboard/Dashboard";
 import "./pages/team/Team";
@@ -12,22 +17,77 @@ const { Dashboard, Team } = window;
 const THEME = "light";
 const DENSITY = "regular";
 const IMBALANCE_THRESHOLD = 6;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
 
 function App() {
   const [route, setRoute] = useState("dashboard");
-  const [extraTasks] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [loadState, setLoadState] = useState({ loading: true, error: null });
 
   useEffect(() => {
     document.documentElement.dataset.theme = THEME;
     document.documentElement.dataset.density = DENSITY;
   }, []);
 
-  const history = useMemo(
-    () => [...window.LUMIN.TASK_HISTORY, ...extraTasks],
-    [extraTasks],
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBackendData() {
+      try {
+        setLoadState({ loading: true, error: null });
+
+        const [teamResponse, tasksResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/team-members`),
+          fetch(`${API_BASE_URL}/api/tasks/with-details`),
+        ]);
+
+        if (!teamResponse.ok) {
+          throw new Error(`Team members request failed with ${teamResponse.status}`);
+        }
+
+        if (!tasksResponse.ok) {
+          throw new Error(`Tasks request failed with ${tasksResponse.status}`);
+        }
+
+        const [teamData, taskData] = await Promise.all([
+          teamResponse.json(),
+          tasksResponse.json(),
+        ]);
+
+        if (cancelled) return;
+
+        setTeamMembers(Array.isArray(teamData) ? teamData.map(normalizeTeamMember) : []);
+        setTasks(Array.isArray(taskData) ? taskData.map(normalizeTask) : []);
+        setLoadState({ loading: false, error: null });
+      } catch (error) {
+        if (cancelled) return;
+
+        setTeamMembers([]);
+        setTasks([]);
+        setLoadState({ loading: false, error: error.message });
+      }
+    }
+
+    loadBackendData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const runtimeTeam = useMemo(() => teamMembers.map((member, index) => ({
+    ...member,
+    tone: ((index % 8) + 1),
+  })), [teamMembers]);
+
+  const history = useMemo(() => tasks, [tasks]);
+  const luminState = useMemo(
+    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: history }),
+    [runtimeTeam, history],
   );
 
-  const { TEAM, gini, loadByPerson } = window.LUMIN;
+  const { TEAM, gini, loadByPerson } = luminState;
   const byPerson = loadByPerson(history);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
@@ -40,7 +100,8 @@ function App() {
   ];
 
   return (
-    <div className="app">
+    <LuminDataProvider value={luminState}>
+      <div className="app">
       <aside className="sidebar">
         <div className="brand">
           <div>
@@ -94,7 +155,7 @@ function App() {
           </div>
           <div className="topbar-right">
             <span style={{ opacity: 0.5 }}>·</span>
-            <span>30d window</span>
+            <span>{loadState.loading ? "loading backend" : loadState.error ? "backend error" : "30d window"}</span>
           </div>
         </div>
 
@@ -105,9 +166,16 @@ function App() {
           {route === "team" && (
             <Team history={history} threshold={IMBALANCE_THRESHOLD} />
           )}
+          {loadState.error && (
+            <div className="card" style={{ borderColor: "var(--c-signal)", marginTop: 16 }}>
+              <div style={{ fontWeight: 500, marginBottom: 6 }}>Backend data unavailable</div>
+              <div style={{ color: "var(--c-mute)", fontSize: 13 }}>{loadState.error}</div>
+            </div>
+          )}
         </div>
       </main>
-    </div>
+      </div>
+    </LuminDataProvider>
   );
 }
 

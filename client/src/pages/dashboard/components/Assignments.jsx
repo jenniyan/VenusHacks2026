@@ -1,6 +1,8 @@
-import { Card, Pill, Avatar, TEAM_BY_ID, relTime } from "../../UI";
+import { Card, Pill, Avatar, relTime } from "../../UI";
+import { useLuminData } from "../../luminConfig";
 
 export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR }) {
+	const { TEAM_BY_ID = {} } = useLuminData();
 	const recent = [...history].sort((a, b) => a.days - b.days).slice(0, 12);
 
 	return (
@@ -34,7 +36,7 @@ export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR })
 								<td>
 									<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 										<Avatar id={task.person} size="sm" />
-										<span>{TEAM_BY_ID[task.person]?.name.split(" ")[0]}</span>
+										<span>{TEAM_BY_ID[task.person]?.name?.split(" ")[0]}</span>
 									</div>
 								</td>
 								<td className="mono" style={{ color: "var(--c-mute)" }}>{relTime(task.days)}</td>

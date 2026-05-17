@@ -1,5 +1,6 @@
 // dashboard.jsx — equity console main view
 
+import { useLuminData } from "../luminConfig";
 import { Card, Stat } from "../UI";
 import Alert from "./components/Alert";
 import Assignments from "./components/Assignments";
@@ -8,7 +9,14 @@ import Distribution from "./components/Distribution";
 import Outliers from "./components/Outliers";
 
 function Dashboard({ history, threshold }) {
-  const { TEAM, NPT_CATEGORIES, CATEGORY_COLOR, loadByPerson, loadByPersonCategory, gini } = window.LUMIN;
+  const {
+    TEAM = [],
+    NPT_CATEGORIES = [],
+    CATEGORY_COLOR = {},
+    loadByPerson,
+    loadByPersonCategory,
+    gini,
+  } = useLuminData();
 
   const byPerson = loadByPerson(history);
   const byPC = loadByPersonCategory(history);
@@ -43,9 +51,9 @@ function Dashboard({ history, threshold }) {
           </div>
         </div>
         <div className="right-meta">
-          <div>Workspace · <b>Eng / Platform</b></div>
+          <div>Workspace · <b>Live backend</b></div>
           <div>Window · <b>Last 30 days</b></div>
-          <div>Updated · <b>2 min ago</b></div>
+          <div>Updated · <b>live</b></div>
         </div>
       </div>
 

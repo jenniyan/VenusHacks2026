@@ -5,9 +5,25 @@ import "dotenv/config";
 const router = express.Router();
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
+  normalizeSupabaseUrl(process.env.SUPABASE_URL),
   process.env.SUPABASE_ANON_KEY
 );
+
+function normalizeSupabaseUrl(rawUrl) {
+  if (!rawUrl) {
+    throw new Error("SUPABASE_URL is missing from .env");
+  }
+
+  const url = new URL(rawUrl);
+  url.search = "";
+  url.hash = "";
+
+  if (url.pathname.startsWith("/rest/v1")) {
+    url.pathname = "/";
+  }
+
+  return url.toString().replace(/\/$/, "");
+}
 
 // GET total number of tasks
 router.get("/tasks/count", async (req, res) => {

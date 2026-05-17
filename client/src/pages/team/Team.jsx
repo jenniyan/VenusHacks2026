@@ -1,11 +1,18 @@
 // team.jsx — team roster view
 
+import { useLuminData } from "../luminConfig";
 import Categories from "./components/Categories";
 import Policy from "./components/Policy";
 import Roster from "./components/Roster";
 
 function Team({ history, threshold }) {
-  const { TEAM, NPT_CATEGORIES, CATEGORY_COLOR, loadByPerson, loadByPersonCategory } = window.LUMIN;
+  const {
+    TEAM = [],
+    NPT_CATEGORIES = [],
+    CATEGORY_COLOR = {},
+    loadByPerson,
+    loadByPersonCategory,
+  } = useLuminData();
   const byPerson = loadByPerson(history);
   const byPC = loadByPersonCategory(history);
   const max = Math.max(...TEAM.map(p => byPerson[p.id] || 0), 1);
@@ -16,7 +23,7 @@ function Team({ history, threshold }) {
         <div>
           <h1>Team</h1>
           <div className="sub">
-            8 members · roster used for fair-rotation lookups. Each row shows the member's
+            {TEAM.length} members · roster used for fair-rotation lookups. Each row shows the member's
             running NPT load and per-category breakdown for the active window.
           </div>
         </div>

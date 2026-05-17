@@ -1,12 +1,13 @@
 // ui.jsx — shared primitives
 
-export const TEAM_BY_ID = Object.fromEntries(window.LUMIN.TEAM.map((p, i) => [p.id, { ...p, tone: ((i % 8) + 1) }]));
+import { useLuminData } from "./luminConfig";
 
 function initials(name) {
   return name.split(/\s+/).map(s => s[0]).slice(0, 2).join("");
 }
 
 export function Avatar({ id, size }) {
+  const { TEAM_BY_ID = {} } = useLuminData();
   const p = TEAM_BY_ID[id];
   if (!p) return <span className={`av ${size || ""}`}>?</span>;
   return (
@@ -17,6 +18,7 @@ export function Avatar({ id, size }) {
 }
 
 export function PersonChip({ id }) {
+  const { TEAM_BY_ID = {} } = useLuminData();
   const p = TEAM_BY_ID[id];
   if (!p) return null;
   return (
@@ -90,6 +92,8 @@ export function Sparkline({ values, height = 26 }) {
 
 // Horizontal stacked bar — segments by category
 export function StackedBar({ personId, breakdown, max, showLabel = true, threshold }) {
+  const { NPT_CATEGORIES = [], CATEGORY_COLOR = {}, TEAM_BY_ID = {} } = useLuminData();
+  const teamMember = TEAM_BY_ID[personId];
   const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
   const pctMax = (total / max) * 100;
   const over = threshold != null && total >= threshold;
@@ -98,14 +102,14 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
     <div className="bar-row" data-over={over} data-under={under}>
       <div className="who" style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <Avatar id={personId} size="sm" />
-        <span>{TEAM_BY_ID[personId]?.name.split(" ")[0]}</span>
+        <span>{teamMember?.name?.split(" ")[0]}</span>
       </div>
       <div className="bar-track">
         <div style={{
           position: "absolute", top: 0, bottom: 0, left: 0,
           width: `${pctMax}%`, display: "flex",
         }}>
-          {window.LUMIN.NPT_CATEGORIES.map(cat => {
+          {NPT_CATEGORIES.map(cat => {
             const v = breakdown[cat.id] || 0;
             if (v === 0 || total === 0) return null;
             const segPct = (v / total) * 100;
@@ -116,7 +120,7 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
                 style={{
                   width: `${segPct}%`,
                   height: "100%",
-                  backgroundColor: window.LUMIN.CATEGORY_COLOR[cat.id],
+                  backgroundColor: CATEGORY_COLOR[cat.id],
                 }}
                 title={`${cat.label}: ${v}`}
               />
@@ -138,11 +142,13 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
 }
 
 export function Legend() {
+  const { NPT_CATEGORIES = [], CATEGORY_COLOR = {} } = useLuminData();
+
   return (
     <div className="legend">
-      {window.LUMIN.NPT_CATEGORIES.map(c => (
+      {NPT_CATEGORIES.map(c => (
         <span key={c.id} className="legend-i">
-          <span className="sw" style={{ background: window.LUMIN.CATEGORY_COLOR[c.id] }} />
+          <span className="sw" style={{ background: CATEGORY_COLOR[c.id] }} />
           {c.label}
         </span>
       ))}
@@ -176,7 +182,7 @@ export function fmtTime(daysAgo) {
 }
 
 Object.assign(window, {
-  TEAM_BY_ID, initials,
+  initials,
   Avatar, PersonChip, Card, Pill, Stat, Sparkline, StackedBar, Legend, Btn,
   relTime, fmtTime,
 });
