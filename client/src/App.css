@@ -13,6 +13,9 @@
   --good-soft: rgba(47, 158, 114, 0.12);
   --signal: #6f2da8;
   --signal-soft: rgba(111, 45, 168, 0.14);
+  --warning: #bf4559;
+  --warning-med: rgb(238, 126, 145);
+  --warning-soft: #f9c5cd;
   --cat-1: #f7928b;
   --cat-2: #f7b88b;
   --cat-3: #f7dc8b;

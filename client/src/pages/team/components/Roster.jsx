@@ -76,7 +76,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 									</div>
 								</td>
 								<td className="right">
-									{over && <Pill kind="signal">overloaded</Pill>}
+									{over && <span className="pill" style={{ borderColor: "var(--warning)", background: "var(--warning-soft)", padding: "4px 8px" }}>overloaded</span>}
 									{under && !over && <Pill kind="good">available</Pill>}
 									{!over && !under && <Pill kind="ghost">balanced</Pill>}
 								</td>
