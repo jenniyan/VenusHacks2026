@@ -21,7 +21,6 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 			action={
 				<span style={{ display: "flex", gap: 6 }}>
 					<SortToggle sortDir={sortDir} onChange={setSortDir} />
-					<Pill kind="ghost">add member</Pill>
 					<Pill kind="ghost">export csv</Pill>
 				</span>
 			}
