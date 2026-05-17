@@ -31,7 +31,10 @@ app.message(async ({ message, client }) => {
     if (!message.text || message.subtype) return;
 
     const analysis = await analyzeMessage(message.text);
-    if (!analysis.isNpt) return;
+    if (!analysis.isNpt) {
+      console.log(`[lumin] NOT NPT: "${message.text}" — ${analysis.explanation}`);
+      return;
+    }
 
     const { load, members } = await getTeamLoad();
     if (members.length === 0) return;

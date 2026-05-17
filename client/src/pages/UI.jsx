@@ -1,5 +1,6 @@
 // ui.jsx — shared primitives
 
+import React from "react";
 import { useLuminData } from "./luminConfig";
 
 function initials(name) {
@@ -98,6 +99,7 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
   const pctMax = (total / max) * 100;
   const over = threshold != null && total >= threshold;
   const under = threshold != null && total <= 1;
+
   return (
     <div className="bar-row" data-over={over} data-under={under}>
       <div className="who" style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -113,7 +115,7 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
             const v = breakdown[cat.id] || 0;
             if (v === 0 || total === 0) return null;
             const segPct = (v / total) * 100;
-            const el = (
+            return (
               <div
                 key={cat.id}
                 className="bar-seg"
@@ -123,11 +125,12 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
                   width: `${segPct}%`,
                   height: "100%",
                   backgroundColor: CATEGORY_COLOR[cat.id],
+                  cursor: "pointer",
+                  position: "relative",
                 }}
                 aria-label={`${cat.label}: ${v} NPT${v === 1 ? "" : "s"}`}
               />
             );
-            return el;
           })}
         </div>
         {total === 0 && (
@@ -138,6 +141,7 @@ export function StackedBar({ personId, breakdown, max, showLabel = true, thresho
           }}>available</span>
         )}
       </div>
+      
       <div className="num">{total}</div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Card, Legend, Pill, StackedBar } from "../../UI";
+import { Card, Pill, StackedBar } from "../../UI";
 import { useMemo, useState } from "react";
 
 export default function Distribution({ sorted, byPerson, byPC, max, threshold }) {
@@ -17,11 +17,10 @@ export default function Distribution({ sorted, byPerson, byPC, max, threshold })
 	return (
 		<Card
 			title="NPT distribution by person"
-			meta={`Sorted · ${sortLabel}`}
+			meta={""}
 			action={
 				<span style={{ display: "flex", gap: 6, alignItems: "center" }}>
 					<SortToggle sortDir={sortDir} onChange={setSortDir} />
-					<Pill kind="ghost">stacked by category</Pill>
 				</span>
 			}
 		>
@@ -41,8 +40,6 @@ export default function Distribution({ sorted, byPerson, byPC, max, threshold })
 				<div className="axis-ticks" />
 				<div />
 			</div>
-			<div className="divider" />
-			<Legend />
 		</Card>
 	);
 }
