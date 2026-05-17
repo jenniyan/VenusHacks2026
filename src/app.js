@@ -10,6 +10,7 @@ import {
   insertMessage,
   recordAssignment,
   syncTeamMembers,
+  getPersonStats,
   CATEGORIES,
 } from "./lumin.js";
 
@@ -25,9 +26,14 @@ const app = new App({
   socketMode: true,
 });
 
+app.error(async (error) => {
+  console.error("[lumin] Bolt app error:", error);
+});
+
 // Listens to all plain user messages, classifies them, and sends a private suggestion to the sender.
 app.message(async ({ message, client }) => {
   try {
+    console.log(`[lumin] raw message — subtype=${message.subtype ?? "none"} text="${message.text?.slice(0, 60)}"`);
     if (!message.text || message.subtype) return;
 
     const analysis = await analyzeMessage(message.text);
@@ -131,7 +137,11 @@ app.message(async ({ message, client }) => {
 
 // Adds a newly joined workspace member to team_members without requiring a restart.
 app.event("team_join", async ({ event }) => {
-  await syncTeamMembers([event.user]);
+  try {
+    await syncTeamMembers([event.user]);
+  } catch (error) {
+    console.error("[lumin] Failed to sync new team member:", error);
+  }
 });
 
 // Handles the assign button click, writes the task to the DB, and replaces the buttons with a confirmation.
@@ -221,6 +231,72 @@ app.action("keep_original", async ({ ack, respond, body }) => {
 
 });
 
+// Responds to /lumin-stats with a private breakdown of the caller's NPT history.
+app.command("/lumin-stats", async ({ ack, respond, body }) => {
+  await ack();
+  const userId = body.user_id;
+
+  let stats;
+  try {
+    stats = await getPersonStats(userId);
+  } catch (err) {
+    console.error("[lumin] /lumin-stats failed:", err);
+    await respond({ response_type: "ephemeral", text: "Could not load your stats right now. Try again in a moment." });
+    return;
+  }
+
+  const { total, completed, pending, teamAvg, rank, teamSize, topCategory, categoryCount, recentTask } = stats;
+
+  const topCatLabel = topCategory ? `${categoryLabel(topCategory[0])} (${topCategory[1]})` : "None yet";
+  const avgDiff = total - Math.round(teamAvg);
+  const avgLine = avgDiff === 0
+    ? "Right at the team average."
+    : avgDiff > 0
+      ? `*${avgDiff} above* the team average of ${Math.round(teamAvg)}.`
+      : `*${Math.abs(avgDiff)} below* the team average of ${Math.round(teamAvg)}.`;
+
+  const rankLabel = `#${rank} of ${teamSize}`;
+  const recentLine = recentTask
+    ? `_${recentTask.title}_ (${categoryLabel(recentTask.category)})`
+    : "No tasks yet.";
+
+  const catBreakdown = Object.entries(categoryCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([slug, n]) => `• ${categoryLabel(slug)}: ${n}`)
+    .join("\n");
+
+  await respond({
+    response_type: "ephemeral",
+    text: `Your Lumin stats — ${total} NPTs total`,
+    blocks: [
+      {
+        type: "header",
+        text: { type: "plain_text", text: "Your invisible-labor stats", emoji: false },
+      },
+      {
+        type: "section",
+        fields: [
+          { type: "mrkdwn", text: `*Total NPTs assigned*\n${total}` },
+          { type: "mrkdwn", text: `*Completed / Pending*\n${completed} done · ${pending} open` },
+          { type: "mrkdwn", text: `*Team rank*\n${rankLabel} (most tasks = #1)` },
+          { type: "mrkdwn", text: `*Top category*\n${topCatLabel}` },
+        ],
+      },
+      {
+        type: "section",
+        text: { type: "mrkdwn", text: `*vs. team average* — ${avgLine}` },
+      },
+      ...(catBreakdown
+        ? [{ type: "section", text: { type: "mrkdwn", text: `*Breakdown by category*\n${catBreakdown}` } }]
+        : []),
+      {
+        type: "context",
+        elements: [{ type: "mrkdwn", text: `Most recent: ${recentLine} · Only visible to you` }],
+      },
+    ],
+  });
+});
+
 // Responds to the /lumin-summary slash command with the current team load.
 app.command("/lumin-summary", async ({ ack, respond }) => {
   await ack();
@@ -231,14 +307,36 @@ app.command("/lumin-summary", async ({ ack, respond }) => {
   });
 });
 
-await app.start();
+app.error((error) => {
+  console.error("[lumin] app error:", error);
+});
 
-const { members: slackMembers } = await app.client.users.list();
-const humans = slackMembers.filter(
-  (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT"
-);
-await syncTeamMembers(humans);
-console.log(`Lumin is running with private ephemeral messages. Synced ${humans.length} team members.`);
+process.on("uncaughtException", (err) => {
+  console.error("[lumin] uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[lumin] unhandled rejection:", reason);
+});
+
+await app.start();
+startHealthCheck(app.client);
+
+
+try {
+  const { members: slackMembers } = await app.client.users.list();
+  const humans = slackMembers.filter(
+    (m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT"
+  );
+  await syncTeamMembers(humans);
+  console.log(`Lumin is running with private ephemeral messages. Synced ${humans.length} team members.`);
+  setInterval(() => {
+    console.log(`[lumin] alive — ${new Date().toISOString()}`);
+  }, 60_000);
+} catch (error) {
+  console.error("[lumin] Bot is running, but initial Slack roster sync failed:", error);
+}
+
 
 async function sendLuminMessage({ client, channel, user, text, blocks }) {
   await client.chat.postEphemeral({
@@ -262,4 +360,19 @@ async function postPrivateConfirmation({ client, body, text }) {
   }
 
   await client.chat.postEphemeral(payload);
+}
+
+function startHealthCheck(client) {
+  const intervalMs = 5 * 60 * 1000;
+
+  async function checkSlackConnection() {
+    try {
+      const result = await client.auth.test();
+      console.log(`[lumin] Slack health check ok for ${result.team}`);
+    } catch (error) {
+      console.error("[lumin] Slack health check failed:", error);
+    }
+  }
+
+  setInterval(checkSlackConnection, intervalMs);
 }

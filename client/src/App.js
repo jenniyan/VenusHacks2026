@@ -17,7 +17,7 @@ const { Dashboard, Team } = window;
 const THEME = "light";
 const DENSITY = "regular";
 const DEFAULT_POLICY = {
-  overloadThreshold: 6,
+  overloadThreshold: 14,
   lookbackDays: 30,
   excludeManagers: true,
 };
@@ -83,10 +83,17 @@ function App() {
     () => tasks.filter((task) => (task.days ?? 0) <= policy.lookbackDays),
     [tasks, policy.lookbackDays],
   );
+
+  // visibleHistory: what the dashboard should render. When the user
+  // selects "all" we want the dashboard to see the full task set
+  // (not clamped by the policy lookback). For other windows, show
+  // tasks within both the policy lookback and the selected window.
   const visibleHistory = useMemo(() => {
-    if (timeWindow === "all") return history;
-    return history.filter((task) => (task.days ?? 0) <= timeWindow);
-  }, [history, timeWindow]);
+    if (timeWindow === "all") return tasks;
+    // Use the full tasks list for time-window filtering so views like
+    // 7/30/90d reflect the true last-N-days, independent of policy.
+    return tasks.filter((task) => (task.days ?? 0) <= timeWindow);
+  }, [tasks, history, timeWindow]);
   const luminState = useMemo(
     () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: visibleHistory }),
     [runtimeTeam, visibleHistory],

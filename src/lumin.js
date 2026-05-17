@@ -146,6 +146,66 @@ export async function recordAssignment({ messageId, title, category, suggestedTo
   if (error) throw error;
 }
 
+// Returns stats for a single team member keyed by their slack_user_id.
+export async function getPersonStats(slackUserId) {
+  const [tasksResult, allTasksResult, membersResult] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select("id, title, category, completed, created_at, suggested_to")
+      .eq("assigned_to", slackUserId)
+      .order("created_at", { ascending: false }),
+    supabase.from("tasks").select("assigned_to, suggested_to").neq("assigned_to", "LUMIN"),
+    supabase.from("team_members").select("slack_user_id").neq("slack_user_id", "LUMIN"),
+  ]);
+
+  if (tasksResult.error) throw tasksResult.error;
+  if (allTasksResult.error) throw allTasksResult.error;
+  if (membersResult.error) throw membersResult.error;
+
+  const myTasks = tasksResult.data;
+  const total = myTasks.length;
+  const completed = myTasks.filter((t) => t.completed).length;
+  const pending = total - completed;
+
+  const redirectedToMe = myTasks.filter(
+    (t) => t.suggested_to === slackUserId && t.suggested_to === slackUserId
+  ).length;
+  const reassignedAway = allTasksResult.data.filter(
+    (t) => t.suggested_to === slackUserId && t.assigned_to !== slackUserId
+  ).length;
+
+  const categoryCount = {};
+  for (const t of myTasks) {
+    categoryCount[t.category] = (categoryCount[t.category] || 0) + 1;
+  }
+  const topCategory = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0] ?? null;
+
+  const teamTotal = allTasksResult.data.length;
+  const memberCount = membersResult.data.length || 1;
+  const teamAvg = teamTotal / memberCount;
+
+  const countsByPerson = {};
+  for (const t of allTasksResult.data) {
+    countsByPerson[t.assigned_to] = (countsByPerson[t.assigned_to] || 0) + 1;
+  }
+  const sorted = Object.values(countsByPerson).sort((a, b) => b - a);
+  const rank = sorted.findIndex((n) => n <= total) + 1;
+
+  const recentTask = myTasks[0] ?? null;
+
+  return {
+    total,
+    completed,
+    pending,
+    teamAvg,
+    rank,
+    teamSize: memberCount,
+    topCategory,
+    categoryCount,
+    recentTask,
+  };
+}
+
 function normalizeSupabaseUrl(rawUrl) {
   if (!rawUrl) {
     throw new Error("SUPABASE_URL is missing from .env");
