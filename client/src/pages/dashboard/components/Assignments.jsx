@@ -8,11 +8,12 @@ const PAGE_SIZE = 10;
 export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR, onUpdate }) {
 	const { TEAM_BY_ID = {} } = useLuminData();
 	const [filter, setFilter] = useState("all");
+	const [sortDir, setSortDir] = useState("newest");
 	const [page, setPage] = useState(0);
 	const [openMenuId, setOpenMenuId] = useState(null);
 
 	const filtered = [...history]
-		.sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity))
+		.sort((a, b) => compareTasksByCreatedAt(a, b, sortDir))
 		.filter((task) => {
 			if (filter === "completed") return task.completed === true;
 			if (filter === "pending") return task.completed !== true;
@@ -24,6 +25,12 @@ export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR, o
 
 	function handleFilterChange(val) {
 		setFilter(val);
+		setPage(0);
+		setOpenMenuId(null);
+	}
+
+	function handleSortChange(val) {
+		setSortDir(val);
 		setPage(0);
 		setOpenMenuId(null);
 	}
@@ -42,29 +49,39 @@ export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR, o
 
 	return (
 		<Card
-			title="Recent assignments"
+			title="Task assignments"
 			meta={`${history.length} this window`}
 			action={
-				<span style={{ display: "flex", gap: 6 }}>
-					{["all", "pending", "completed"].map((f) => (
+				<div className="assignments-actions">
+					<div className="sort-toggle" aria-label="Sort task assignments by date">
 						<button
-							key={f}
-							onClick={() => handleFilterChange(f)}
-							style={{
-								padding: "3px 10px",
-								borderRadius: 4,
-								border: "1px solid var(--c-line)",
-								cursor: "pointer",
-								fontSize: 12,
-								fontWeight: filter === f ? 600 : 400,
-								background: filter === f ? "var(--c-accent, #6366f1)" : "transparent",
-								color: filter === f ? "#fff" : "var(--c-mute)",
-							}}
+							type="button"
+							data-active={sortDir === "newest"}
+							onClick={() => handleSortChange("newest")}
 						>
-							{f.charAt(0).toUpperCase() + f.slice(1)}
+							Newest
 						</button>
-					))}
-				</span>
+						<button
+							type="button"
+							data-active={sortDir === "oldest"}
+							onClick={() => handleSortChange("oldest")}
+						>
+							Oldest
+						</button>
+					</div>
+					<div className="sort-toggle" aria-label="Filter task assignments by status">
+						{["all", "pending", "completed"].map((f) => (
+							<button
+								key={f}
+								type="button"
+								data-active={filter === f}
+								onClick={() => handleFilterChange(f)}
+							>
+								{f.charAt(0).toUpperCase() + f.slice(1)}
+							</button>
+						))}
+					</div>
+				</div>
 			}
 		>
 			<table className="tbl">
@@ -138,6 +155,34 @@ export default function Assignments({ history, NPT_CATEGORIES, CATEGORY_COLOR, o
 			)}
 		</Card>
 	);
+}
+
+function compareTasksByCreatedAt(a, b, sortDir) {
+	const aTime = getTaskTime(a);
+	const bTime = getTaskTime(b);
+	const diff = aTime - bTime;
+
+	if (diff !== 0) return sortDir === "oldest" ? diff : -diff;
+
+	const aId = Number(a.id);
+	const bId = Number(b.id);
+	if (!Number.isNaN(aId) && !Number.isNaN(bId) && aId !== bId) {
+		return sortDir === "oldest" ? aId - bId : bId - aId;
+	}
+
+	return String(a.id).localeCompare(String(b.id)) * (sortDir === "oldest" ? 1 : -1);
+}
+
+function getTaskTime(task) {
+	const timestamp = task.created_at || task.createdAt || task.message?.timestamp || task.message?.created_at;
+	if (timestamp) {
+		const parsed = new Date(timestamp).getTime();
+		if (!Number.isNaN(parsed)) return parsed;
+	}
+
+	const days = task.days ?? Infinity;
+	if (days === Infinity) return 0;
+	return Date.now() - days * 86400000;
 }
 
 function ThreeDotMenu({ open, onOpen, onClose, onComplete, onDelete, completed }) {
