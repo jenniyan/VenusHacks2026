@@ -3,7 +3,7 @@ import { Card } from "../../UI";
 export default function Categories({ byCategory, total, NPT_CATEGORIES, CATEGORY_COLOR }) {
 	return (
 		<Card title="By category">
-			<div className="stack" style={{ gap: 10 }}>
+			<div className="stack" style={{ gap: 10, padding: "6px 3px" }}>
 				{NPT_CATEGORIES.map((category) => {
 					const value = byCategory[category.id] || 0;
 					const pct = total > 0 ? (value / total) * 100 : 0;
