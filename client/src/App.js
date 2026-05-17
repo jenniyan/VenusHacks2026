@@ -24,6 +24,7 @@ function App() {
   const [teamMembers, setTeamMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loadState, setLoadState] = useState({ loading: true, error: null });
+  const [selectedWindow, setSelectedWindow] = useState("30d");
 
   useEffect(() => {
     document.documentElement.dataset.theme = THEME;
@@ -155,16 +156,32 @@ function App() {
           </div>
           <div className="topbar-right">
             <span style={{ opacity: 0.5 }}>·</span>
-            <span>{loadState.loading ? "loading backend" : loadState.error ? "backend error" : "30d window"}</span>
+            {loadState.loading ? (
+              <span>loading backend</span>
+            ) : loadState.error ? (
+              <span>backend error</span>
+            ) : (
+              <select
+                aria-label="Time window"
+                value={selectedWindow}
+                onChange={(e) => setSelectedWindow(e.target.value)}
+                className="time-window-select"
+              >
+                <option value="30d">30d window</option>
+                <option value="1d">1d window</option>
+                <option value="7d">7d window</option>
+                <option value="all">All time</option>
+              </select>
+            )}
           </div>
         </div>
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} />
+            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} selectedWindow={selectedWindow} />
           )}
           {route === "team" && (
-            <Team history={history} threshold={IMBALANCE_THRESHOLD} />
+            <Team history={history} threshold={IMBALANCE_THRESHOLD} selectedWindow={selectedWindow} />
           )}
           {loadState.error && (
             <div className="card" style={{ borderColor: "var(--c-signal)", marginTop: 16 }}>

@@ -8,7 +8,7 @@ import Categories from "./components/Categories";
 import Distribution from "./components/Distribution";
 import Outliers from "./components/Outliers";
 
-function Dashboard({ history, threshold }) {
+function Dashboard({ history, threshold, selectedWindow = "30d" }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -18,8 +18,14 @@ function Dashboard({ history, threshold }) {
     gini,
   } = useLuminData();
 
-  const byPerson = loadByPerson(history);
-  const byPC = loadByPersonCategory(history);
+  // apply active time window filter to history
+  const windowMap = { "1d": 1, "7d": 7, "30d": 30 };
+  const filteredHistory = selectedWindow === "all"
+    ? history
+    : history.filter((t) => (typeof t.days === "number" ? t.days <= (windowMap[selectedWindow] || 30) : true));
+
+  const byPerson = loadByPerson(filteredHistory);
+  const byPC = loadByPersonCategory(filteredHistory);
   const counts = TEAM.map(p => byPerson[p.id] || 0);
   const sorted = [...TEAM].sort((a, b) => (byPerson[b.id] || 0) - (byPerson[a.id] || 0));
   const max = Math.max(...counts, 1);
@@ -31,11 +37,11 @@ function Dashboard({ history, threshold }) {
 
   // categories aggregate
   const byCategory = {};
-  for (const t of history) byCategory[t.category] = (byCategory[t.category] || 0) + 1;
+  for (const t of filteredHistory) byCategory[t.category] = (byCategory[t.category] || 0) + 1;
 
-  // 30-day spark — count tasks per 3-day bucket
+  // spark — count tasks per 3-day bucket for visualization (uses 30-day buckets)
   const buckets = Array(10).fill(0);
-  for (const t of history) {
+  for (const t of filteredHistory) {
     const b = Math.min(9, Math.floor(t.days / 3));
     buckets[9 - b]++;
   }
@@ -46,8 +52,8 @@ function Dashboard({ history, threshold }) {
         <div>
           <h1>Equity Console</h1>
           <div className="sub">
-            Distribution of non-promotable tasks across the team in the last 30 days.
-            Lumin tracks task history to identify imbalance and suggest fairer assignments.
+            {`Distribution of non-promotable tasks across the team in the last ${selectedWindow === "all" ? "all time" : (selectedWindow === "1d" ? "1 day" : (selectedWindow === "7d" ? "7 days" : "30 days"))}.`}
+            {' '}Lumin tracks task history to identify imbalance and suggest fairer assignments.
           </div>
         </div>
       </div>
@@ -56,7 +62,7 @@ function Dashboard({ history, threshold }) {
 
       {/* top stat row */}
       <div className="grid g-3">
-        <Card title="Total NPTs · 30d">
+        <Card title={`Total NPTs · ${selectedWindow === "all" ? "all" : selectedWindow}`}>
           <Stat
             value={total}
             label=""

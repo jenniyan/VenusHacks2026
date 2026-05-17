@@ -5,7 +5,7 @@ import Categories from "./components/Categories";
 import Policy from "./components/Policy";
 import Roster from "./components/Roster";
 
-function Team({ history, threshold }) {
+function Team({ history, threshold, selectedWindow = "30d" }) {
   const {
     TEAM = [],
     NPT_CATEGORIES = [],
@@ -13,8 +13,13 @@ function Team({ history, threshold }) {
     loadByPerson,
     loadByPersonCategory,
   } = useLuminData();
-  const byPerson = loadByPerson(history);
-  const byPC = loadByPersonCategory(history);
+  const windowMap = { "1d": 1, "7d": 7, "30d": 30 };
+  const filteredHistory = selectedWindow === "all"
+    ? history
+    : history.filter((t) => (typeof t.days === "number" ? t.days <= (windowMap[selectedWindow] || 30) : true));
+
+  const byPerson = loadByPerson(filteredHistory);
+  const byPC = loadByPersonCategory(filteredHistory);
   const max = Math.max(...TEAM.map(p => byPerson[p.id] || 0), 1);
 
   return (
@@ -24,7 +29,7 @@ function Team({ history, threshold }) {
           <h1>Team</h1>
           <div className="sub">
             {TEAM.length} members · roster used for fair-rotation lookups. Each row shows the member's
-            running NPT load and per-category breakdown for the active window.
+            running NPT load and per-category breakdown for the active window ({selectedWindow === "all" ? "all time" : selectedWindow}).
           </div>
         </div>
       </div>
