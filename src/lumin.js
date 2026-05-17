@@ -59,16 +59,11 @@ export async function getTeamLoad() {
   return { members, load };
 }
 
-// Returns the team member with the fewest tasks in the given category.
-// Breaks ties using total task count. If still tied, prefers requestedPerson
+// Returns the team member with the fewest total tasks. If tied, prefers requestedPerson
 // so the bot only redirects when there is a genuine imbalance.
 export function chooseLowestLoadMember(load, category, members, requestedPerson) {
   if (members.length === 0) return undefined;
   return [...members].sort((a, b) => {
-    const catDiff =
-      (load[a.slack_user_id]?.categories[category] || 0) -
-      (load[b.slack_user_id]?.categories[category] || 0);
-    if (catDiff !== 0) return catDiff;
     const totalDiff = (load[a.slack_user_id]?.total || 0) - (load[b.slack_user_id]?.total || 0);
     if (totalDiff !== 0) return totalDiff;
     if (requestedPerson) {
@@ -93,19 +88,13 @@ export function findMentionedTeamMember(text, members) {
   );
 }
 
-// Returns a warning string if the person named in the message has a higher load
-// than the suggested person. Uses category count if that was the deciding factor,
-// otherwise falls back to total count to match how the suggestion was made.
+// Returns a warning string if the person named in the message has more total tasks
+// than the suggested person. Returns empty string if they match or no one was named.
 export function buildWarning(requestedPerson, suggestedPerson, category, load) {
   if (!requestedPerson) return "";
   if (requestedPerson.slack_user_id === suggestedPerson.slack_user_id) return "";
-  const requestedCat = load[requestedPerson.slack_user_id]?.categories[category] || 0;
-  const suggestedCat = load[suggestedPerson.slack_user_id]?.categories[category] || 0;
-  if (requestedCat !== suggestedCat) {
-    return `${requestedPerson.display_name} has already handled ${requestedCat} recent ${category} task(s). `;
-  }
-  const requestedTotal = load[requestedPerson.slack_user_id]?.total || 0;
-  return `${requestedPerson.display_name} has already handled ${requestedTotal} total task(s) across all categories. `;
+  const total = load[requestedPerson.slack_user_id]?.total || 0;
+  return `${requestedPerson.display_name} has already handled ${total} total task(s). `;
 }
 
 // Formats the team load as a readable string for Slack messages.
