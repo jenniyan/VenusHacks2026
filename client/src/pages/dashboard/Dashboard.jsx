@@ -62,7 +62,9 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
         </div>
       </div>
 
-      <Alert overloaded={overloaded} threshold={threshold} top={top} byPerson={byPerson} />
+      {timeWindow !== "all" && (
+        <Alert overloaded={overloaded} threshold={threshold} top={top} byPerson={byPerson} />
+      )}
 
       {/* top stat row */}
       <div className="grid g-3">
