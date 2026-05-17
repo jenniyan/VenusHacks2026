@@ -154,28 +154,30 @@ function App() {
       </aside>
 
       <main className="main">
-        <div className="window-toolbar">
-          <div>
-            <div className="window-label">
-              {loadState.loading ? "Loading backend" : "Time window"}
+        {route === "dashboard" && (
+          <div className="window-toolbar">
+            <div>
+              <div className="window-label">
+                {loadState.loading ? "Loading backend" : "Time window"}
+              </div>
             </div>
+            <select
+              className="window-select"
+              value={timeWindow}
+              onChange={(event) => {
+                const value = event.target.value === "all" ? "all" : Number(event.target.value);
+                setTimeWindow(value);
+              }}
+              disabled={loadState.loading || Boolean(loadState.error)}
+            >
+              {TIME_WINDOWS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
-          <select
-            className="window-select"
-            value={timeWindow}
-            onChange={(event) => {
-              const value = event.target.value === "all" ? "all" : Number(event.target.value);
-              setTimeWindow(value);
-            }}
-            disabled={loadState.loading || Boolean(loadState.error)}
-          >
-            {TIME_WINDOWS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        )}
 
         <div className="content">
           {route === "dashboard" && (
@@ -187,7 +189,7 @@ function App() {
           )}
           {route === "team" && (
             <Team
-              history={visibleHistory}
+              history={history}
               threshold={policy.overloadThreshold}
               policy={policy}
               onPolicyChange={setPolicy}
