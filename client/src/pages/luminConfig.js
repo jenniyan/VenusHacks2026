@@ -8,7 +8,7 @@ const NPT_CATEGORIES = [
   { id: "social", label: "Social planning", short: "Social" },
   { id: "coordination", label: "Team coordination", short: "Coord" },
   { id: "recognition", label: "Recognition & morale", short: "Kudos" },
-  { id: "culture_admin", label: "Culture / admin", short: "Culture" },
+  { id: "culture_admin", label: "Culture & admin", short: "Culture" },
   { id: "interviewing", label: "Interviewing volume", short: "Interviews" },
   { id: "docs_housekeeping", label: "Docs housekeeping", short: "Docs" },
   { id: "support_triage", label: "Support triage", short: "Support" },
