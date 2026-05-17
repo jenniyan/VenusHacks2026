@@ -1,6 +1,6 @@
-# Lum& Slack Bot
+# Fair& Slack Bot
 
-A Slack bot MVP for Lum&. It listens for likely invisible-labor requests, explains why the message was flagged, and suggests the lowest-load teammate from mock in-memory data.
+A Slack bot MVP for Fair&. It listens for likely invisible-labor requests, explains why the message was flagged, and suggests the lowest-load teammate from mock in-memory data.
 
 ## Run locally
 

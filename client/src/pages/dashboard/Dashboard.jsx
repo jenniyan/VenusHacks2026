@@ -57,7 +57,7 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
           <h1>Equity Console</h1>
           <div className="sub">
             Distribution of non-promotable tasks across the team · {windowLabel}.
-            Lum& tracks task history to identify imbalance and suggest fairer assignments.
+            Fair& tracks task history to identify imbalance and suggest fairer assignments.
           </div>
         </div>
       </div>

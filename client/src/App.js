@@ -117,7 +117,7 @@ function App() {
       <aside className="sidebar">
         <div className="brand">
           <div>
-            <div className="brand-mark">Lum&</div>
+            <div className="brand-mark">Fair&</div>
             <div className="brand-tag">equity console</div>
           </div>
         </div>

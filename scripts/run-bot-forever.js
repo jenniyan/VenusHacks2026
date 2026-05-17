@@ -9,7 +9,7 @@ function timestamp() {
 }
 
 function startBot() {
-  console.log(`[${timestamp()}] Starting Lum& Slack bot...`);
+  console.log(`[${timestamp()}] Starting Fair& Slack bot...`);
   child = spawn(process.execPath, ["src/app.js"], {
     stdio: "inherit",
     env: process.env,
@@ -22,7 +22,7 @@ function startBot() {
     restartCount += 1;
     const delayMs = Math.min(30000, 2000 + restartCount * 1000);
     console.log(
-      `[${timestamp()}] Lum& bot stopped` +
+      `[${timestamp()}] Fair& bot stopped` +
         ` (${signal || `exit ${code}`}). Restarting in ${Math.round(delayMs / 1000)}s...`,
     );
     setTimeout(startBot, delayMs);
@@ -31,7 +31,7 @@ function startBot() {
 
 function stopBot(signal) {
   stopping = true;
-  console.log(`[${timestamp()}] Stopping Lum& Slack bot...`);
+  console.log(`[${timestamp()}] Stopping Fair& Slack bot...`);
   if (child) child.kill(signal);
   process.exit(0);
 }
