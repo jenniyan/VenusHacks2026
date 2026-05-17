@@ -46,6 +46,8 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
 
   const windowLabel = timeWindow === "all" ? "All time" : `${timeWindow}d`;
 
+  const teamStatus = giniVal <= 0.25 ? "great!" : giniVal <= 0.5 ? "just okay." : "poorly...";
+
   return (
     <div className="stack">
       <div className="page-h">
@@ -76,6 +78,9 @@ function Dashboard({ history, threshold, onUpdate, timeWindow = 30 }) {
             label=""
             delta={<>0 = equal · 1 = max imbalance · target <b>≤ 0.25</b></>}
           />
+        </Card>
+        <Card title={`Your team is doing ${teamStatus}`}>
+          
         </Card>
       </div>
 
