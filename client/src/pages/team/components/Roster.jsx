@@ -37,7 +37,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 	return (
 		<Card
 			title="Roster"
-			meta={`sorted by current NPT load · ${sortLabel}`}
+			meta={""}
 			action={
 				<span className="roster-actions">
 					<SortToggle sortDir={sortDir} onChange={setSortDir} />
@@ -119,8 +119,8 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 					})}
 				</tbody>
 			</table>
-			<div className="divider"></div>
-			<Legend />
+			{/* <div className="divider"></div>
+			<Legend /> */}
 		</Card>
 	);
 }

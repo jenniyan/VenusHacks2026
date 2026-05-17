@@ -200,9 +200,17 @@ textarea {
 
 .nav-count {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 4px 8px;
   font-size: 12px;
   font-weight: 700;
   color: var(--ink);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line-2);
 }
 
 .mono {

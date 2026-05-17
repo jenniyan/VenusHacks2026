@@ -20,12 +20,9 @@ export default function Policy({ policy, onPolicyChange }) {
 		<Card
 			title="Assignment rules"
 			meta="editable"
+			style={{ padding: 18 }}
 		>
-			<div className="policy-card">
-				<p>
-					Lumin recommends the next assignee by minimizing total NPT load, then breaking ties
-					with per-category load. These settings control how the dashboard flags imbalance.
-				</p>
+			<div className="policy-card" style={{ gap: 10 }}>
 
 				<label className="policy-field">
 					<span>

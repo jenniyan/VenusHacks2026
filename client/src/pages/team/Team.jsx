@@ -21,20 +21,18 @@ function Team({ history, threshold, policy, onPolicyChange }) {
     <div className="stack">
       <div className="page-h">
         <div>
-          <h1>Team</h1>
-          <div className="sub">
-            {TEAM.length} members · roster used for fair-rotation lookups. Each row shows the member's
-            running NPT load and per-category breakdown for the active window.
-          </div>
+          <h1>Team <span style={{ color: "var(--c-mute)", fontSize: 28 }}>({TEAM.length} members)</span></h1>
         </div>
       </div>
 
-      <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
+      
 
       <div className="grid g-2">
         <Policy policy={policy} onPolicyChange={onPolicyChange} />
         <Categories NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} />
       </div>
+
+      <Roster TEAM={TEAM} byPerson={byPerson} byPC={byPC} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} threshold={threshold} max={max} />
     </div>
   );
 }
