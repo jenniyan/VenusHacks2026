@@ -1,6 +1,6 @@
 /* eslint-env browser */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import "./App.css";
 import {
@@ -30,51 +30,36 @@ function App() {
     document.documentElement.dataset.density = DENSITY;
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadBackendData = useCallback(async () => {
+    try {
+      setLoadState({ loading: true, error: null });
 
-    async function loadBackendData() {
-      try {
-        setLoadState({ loading: true, error: null });
+      const [teamResponse, tasksResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/team-members`),
+        fetch(`${API_BASE_URL}/api/tasks/with-details`),
+      ]);
 
-        const [teamResponse, tasksResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/team-members`),
-          fetch(`${API_BASE_URL}/api/tasks/with-details`),
-        ]);
+      if (!teamResponse.ok) throw new Error(`Team members request failed with ${teamResponse.status}`);
+      if (!tasksResponse.ok) throw new Error(`Tasks request failed with ${tasksResponse.status}`);
 
-        if (!teamResponse.ok) {
-          throw new Error(`Team members request failed with ${teamResponse.status}`);
-        }
+      const [teamData, taskData] = await Promise.all([
+        teamResponse.json(),
+        tasksResponse.json(),
+      ]);
 
-        if (!tasksResponse.ok) {
-          throw new Error(`Tasks request failed with ${tasksResponse.status}`);
-        }
-
-        const [teamData, taskData] = await Promise.all([
-          teamResponse.json(),
-          tasksResponse.json(),
-        ]);
-
-        if (cancelled) return;
-
-        setTeamMembers(Array.isArray(teamData) ? teamData.map(normalizeTeamMember) : []);
-        setTasks(Array.isArray(taskData) ? taskData.map(normalizeTask) : []);
-        setLoadState({ loading: false, error: null });
-      } catch (error) {
-        if (cancelled) return;
-
-        setTeamMembers([]);
-        setTasks([]);
-        setLoadState({ loading: false, error: error.message });
-      }
+      setTeamMembers(Array.isArray(teamData) ? teamData.map(normalizeTeamMember) : []);
+      setTasks(Array.isArray(taskData) ? taskData.map(normalizeTask) : []);
+      setLoadState({ loading: false, error: null });
+    } catch (error) {
+      setTeamMembers([]);
+      setTasks([]);
+      setLoadState({ loading: false, error: error.message });
     }
-
-    loadBackendData();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    loadBackendData();
+  }, [loadBackendData]);
 
   const runtimeTeam = useMemo(() => teamMembers.map((member, index) => ({
     ...member,
@@ -161,7 +146,7 @@ function App() {
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} />
+            <Dashboard history={history} threshold={IMBALANCE_THRESHOLD} onUpdate={loadBackendData} />
           )}
           {route === "team" && (
             <Team history={history} threshold={IMBALANCE_THRESHOLD} />
