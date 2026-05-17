@@ -103,7 +103,7 @@ function Dashboard({ history, threshold, selectedWindow = "30d" }) {
       </div>
 
       <Assignments
-        history={history}
+        history={filteredHistory}
         byPerson={byPerson}
         NPT_CATEGORIES={NPT_CATEGORIES}
         CATEGORY_COLOR={CATEGORY_COLOR}

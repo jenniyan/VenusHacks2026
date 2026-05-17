@@ -2,6 +2,12 @@ import { Card, Pill, Avatar, relTime } from "../../UI";
 import { useLuminData } from "../../luminConfig";
 import { useMemo, useState } from "react";
 
+function getDaysAgo(createdAt) {
+  const ts = Date.parse(createdAt);
+  if (Number.isNaN(ts)) return 0;
+  return Math.max(0, Math.floor((Date.now() - ts) / 86400000));
+}
+
 export default function Assignments({ history, byPerson, NPT_CATEGORIES, CATEGORY_COLOR }) {
 	const { TEAM_BY_ID = {} } = useLuminData();
 	const [sortDir, setSortDir] = useState("desc");
@@ -11,7 +17,7 @@ export default function Assignments({ history, byPerson, NPT_CATEGORIES, CATEGOR
 				.sort((a, b) => {
 					const diff = (byPerson[a.person] || 0) - (byPerson[b.person] || 0);
 					if (diff !== 0) return sortDir === "asc" ? diff : -diff;
-					return a.days - b.days;
+					return getDaysAgo(a.created_at) - getDaysAgo(b.created_at);
 				})
 				.slice(0, 12),
 		[byPerson, history, sortDir],
@@ -53,7 +59,7 @@ export default function Assignments({ history, byPerson, NPT_CATEGORIES, CATEGOR
 										<span>{TEAM_BY_ID[task.person]?.name?.split(" ")[0]}</span>
 									</div>
 								</td>
-								<td className="mono" style={{ color: "var(--c-mute)" }}>{relTime(task.days)}</td>
+								<td className="mono" style={{ color: "var(--c-mute)" }}>{relTime(getDaysAgo(task.created_at))}</td>
 							</tr>
 						);
 					})}
