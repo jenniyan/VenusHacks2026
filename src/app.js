@@ -171,7 +171,16 @@ app.action("assign_suggested", async ({ ack, respond, body, client }) => {
     try {
       await client.chat.postMessage({
         channel: channelId,
-        text: `*${taskTitle}* was shifted from *${redirectedFrom}* to *${memberName}* (<@${memberSlackId}>) for a more balanced workload.`,
+        text: `${taskTitle} was shifted from ${redirectedFrom} to ${memberName} for a more balanced workload.`,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${taskTitle}* was shifted from *${redirectedFrom}* to <@${memberSlackId}> for a more balanced workload.`,
+            },
+          },
+        ],
       });
     } catch (err) {
       console.error("Lumin failed to post public reassignment notice:", err);
