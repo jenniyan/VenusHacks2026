@@ -78,34 +78,31 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 								<td>{person.role}</td>
 								<td className="right num">{total}</td>
 								<td>
-									<div style={{ position: "relative", height: 14, background: "var(--c-panel-2)", border: "1px solid var(--c-line)", borderRadius: 2, overflow: "hidden" }}>
+									<div className="bar-track">
 										{(() => {
-											let left = 0;
 											const pctMax = total > 0 ? (total / max) * 100 : 0;
-											return NPT_CATEGORIES.map((category) => {
-												const value = breakdown[category.id] || 0;
-												if (value === 0 || total === 0) return null;
-												const segPct = (value / total) * pctMax;
-												const segment = (
-													<div
-														key={category.id}
-														className="bar-seg"
-														data-tooltip={`${category.label}: ${value}`}
-														tabIndex={0}
-														style={{
-															position: "absolute",
-															top: 0,
-															bottom: 0,
-															left: `${left}%`,
-															width: `${segPct}%`,
-															background: CATEGORY_COLOR[category.id],
-														}}
-														aria-label={`${category.label}: ${value} NPT${value === 1 ? "" : "s"}`}
-													/>
-												);
-												left += segPct;
-												return segment;
-											});
+											return (
+												<div className="bar-fill" style={{ width: `${pctMax}%` }}>
+													{NPT_CATEGORIES.map((category) => {
+														const value = breakdown[category.id] || 0;
+														if (value === 0 || total === 0) return null;
+														const segPct = (value / total) * 100;
+														return (
+															<div
+																key={category.id}
+																className="bar-seg"
+																data-tooltip={`${category.label}: ${value}`}
+																tabIndex={0}
+																style={{
+																	width: `${segPct}%`,
+																	background: CATEGORY_COLOR[category.id],
+																}}
+																aria-label={`${category.label}: ${value} NPT${value === 1 ? "" : "s"}`}
+															/>
+														);
+													})}
+												</div>
+											);
 										})()}
 									</div>
 								</td>
