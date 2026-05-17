@@ -90,6 +90,9 @@ app.message(async ({ message, client }) => {
                 memberName: suggestedPerson.display_name,
                 category: analysis.category,
                 taskTitle: analysis.taskTitle || analysis.category,
+                ...(requestedPerson && requestedPerson.slack_user_id !== suggestedPerson.slack_user_id
+                  ? { redirectedFrom: requestedPerson.display_name }
+                  : {}),
               }),
             },
             ...(requestedPerson && requestedPerson.slack_user_id !== suggestedPerson.slack_user_id
@@ -124,10 +127,10 @@ app.event("team_join", async ({ event }) => {
 });
 
 // Handles the assign button click, writes the task to the DB, and replaces the buttons with a confirmation.
-app.action("assign_suggested", async ({ ack, respond, body }) => {
+app.action("assign_suggested", async ({ ack, respond, body, client }) => {
   await ack();
 
-  const { messageId, memberSlackId, memberName, category, taskTitle } = JSON.parse(
+  const { messageId, memberSlackId, memberName, category, taskTitle, redirectedFrom } = JSON.parse(
     body.actions[0].value
   );
 
@@ -154,6 +157,18 @@ app.action("assign_suggested", async ({ ack, respond, body }) => {
       },
     ],
   });
+
+  if (redirectedFrom) {
+    const channelId = body.container?.channel_id || body.channel?.id;
+    try {
+      await client.chat.postMessage({
+        channel: channelId,
+        text: `*${taskTitle}* was shifted from *${redirectedFrom}* to *${memberName}* (<@${memberSlackId}>) for a more balanced workload.`,
+      });
+    } catch (err) {
+      console.error("Lumin failed to post public reassignment notice:", err);
+    }
+  }
 });
 
 // Handles the keep original button — records the override and replaces the buttons with a confirmation.
@@ -186,6 +201,7 @@ app.action("keep_original", async ({ ack, respond, body }) => {
       },
     ],
   });
+
 });
 
 // Responds to the /lumin-summary slash command with the current team load.
