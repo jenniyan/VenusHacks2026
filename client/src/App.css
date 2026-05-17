@@ -225,29 +225,73 @@ textarea {
   gap: 18px;
 }
 
-.topbar {
+.window-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
+  padding: 9px 20px;
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(16px);
   box-shadow: 0 12px 30px rgba(70, 26, 113, 0.08);
 }
 
-.crumbs {
+/* Keep the toolbar visible while scrolling */
+.window-toolbar {
+  position: sticky;
+  top: 22px;
+  z-index: 60;
+}
+
+.window-label {
   color: var(--mute);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.window-caption {
+  margin-top: 4px;
+  color: var(--ink-2);
   font-size: 13px;
 }
 
-.topbar-right {
-  display: flex;
+.window-select {
+  min-width: 168px;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 6px 16px rgba(70, 26, 113, 0.05);
+  font-weight: 700;
+  line-height: 1;
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+}
+
+.window-select-wrap {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  color: var(--ink-2);
-  font-size: 13px;
+  justify-content: flex-start;
+}
+
+.window-select:focus-visible {
+  border-color: rgba(111, 45, 168, 0.45);
+  box-shadow: 0 0 0 3px rgba(111, 45, 168, 0.14), 0 6px 16px rgba(70, 26, 113, 0.05);
+}
+
+.window-select:hover:not(:disabled) {
+  border-color: rgba(111, 45, 168, 0.28);
+  box-shadow: 0 6px 16px rgba(70, 26, 113, 0.07);
+}
+
+.window-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .content {

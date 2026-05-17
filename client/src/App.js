@@ -22,6 +22,13 @@ const DEFAULT_POLICY = {
   excludeManagers: true,
 };
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3001";
+const TIME_WINDOWS = [
+  { value: 7, label: "Last 7 days" },
+  { value: 14, label: "Last 14 days" },
+  { value: 30, label: "Last 30 days" },
+  { value: 90, label: "Last 90 days" },
+  { value: "all", label: "All time" },
+];
 
 function App() {
   const [route, setRoute] = useState("dashboard");
@@ -29,6 +36,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [policy, setPolicy] = useState(DEFAULT_POLICY);
   const [loadState, setLoadState] = useState({ loading: true, error: null });
+  const [timeWindow, setTimeWindow] = useState(30);
 
   useEffect(() => {
     document.documentElement.dataset.theme = THEME;
@@ -75,13 +83,17 @@ function App() {
     () => tasks.filter((task) => (task.days ?? 0) <= policy.lookbackDays),
     [tasks, policy.lookbackDays],
   );
+  const visibleHistory = useMemo(() => {
+    if (timeWindow === "all") return history;
+    return history.filter((task) => (task.days ?? 0) <= timeWindow);
+  }, [history, timeWindow]);
   const luminState = useMemo(
-    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: history }),
-    [runtimeTeam, history],
+    () => buildRuntimeLuminState({ teamMembers: runtimeTeam, tasks: visibleHistory }),
+    [runtimeTeam, visibleHistory],
   );
 
   const { TEAM, gini, loadByPerson } = luminState;
-  const byPerson = loadByPerson(history);
+  const byPerson = loadByPerson(visibleHistory);
   const ginVal = gini(TEAM.map((person) => byPerson[person.id] || 0));
   const overloaded = TEAM.filter(
     (person) => (byPerson[person.id] || 0) >= policy.overloadThreshold,
@@ -142,23 +154,40 @@ function App() {
       </aside>
 
       <main className="main">
-        <div className="topbar">
-          <div className="crumbs">
-            lumin / {nav.find((item) => item.id === route)?.label}
+        <div className="window-toolbar">
+          <div>
+            <div className="window-label">
+              {loadState.loading ? "Loading backend" : "Time window"}
+            </div>
           </div>
-          <div className="topbar-right">
-            <span style={{ opacity: 0.5 }}>·</span>
-            <span>{loadState.loading ? "loading backend" : loadState.error ? "backend error" : `${policy.lookbackDays}d window`}</span>
-          </div>
+          <select
+            className="window-select"
+            value={timeWindow}
+            onChange={(event) => {
+              const value = event.target.value === "all" ? "all" : Number(event.target.value);
+              setTimeWindow(value);
+            }}
+            disabled={loadState.loading || Boolean(loadState.error)}
+          >
+            {TIME_WINDOWS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="content">
           {route === "dashboard" && (
-            <Dashboard history={history} threshold={policy.overloadThreshold} onUpdate={loadBackendData} />
+            <Dashboard
+              history={visibleHistory}
+              threshold={policy.overloadThreshold}
+              onUpdate={loadBackendData}
+            />
           )}
           {route === "team" && (
             <Team
-              history={history}
+              history={visibleHistory}
               threshold={policy.overloadThreshold}
               policy={policy}
               onPolicyChange={setPolicy}
