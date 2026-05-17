@@ -83,6 +83,7 @@ function Dashboard({ history, threshold }) {
       <div className="grid g-2-1">
         <Distribution
           sorted={sorted}
+          byPerson={byPerson}
           byPC={byPC}
           max={max}
           threshold={threshold}
@@ -100,7 +101,12 @@ function Dashboard({ history, threshold }) {
         </div>
       </div>
 
-      <Assignments history={history} NPT_CATEGORIES={NPT_CATEGORIES} CATEGORY_COLOR={CATEGORY_COLOR} />
+      <Assignments
+        history={history}
+        byPerson={byPerson}
+        NPT_CATEGORIES={NPT_CATEGORIES}
+        CATEGORY_COLOR={CATEGORY_COLOR}
+      />
     </div>
   );
 }

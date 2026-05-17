@@ -1,12 +1,26 @@
 import { Avatar, Card, Legend, Pill } from "../../UI";
+import { useMemo, useState } from "react";
 
 export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_COLOR, threshold, max }) {
+	const [sortDir, setSortDir] = useState("desc");
+	const sortedTeam = useMemo(
+		() =>
+			[...TEAM].sort((a, b) => {
+				const diff = (byPerson[a.id] || 0) - (byPerson[b.id] || 0);
+				if (diff !== 0) return sortDir === "asc" ? diff : -diff;
+				return a.name.localeCompare(b.name);
+			}),
+		[TEAM, byPerson, sortDir],
+	);
+	const sortLabel = sortDir === "desc" ? "most to least NPTs" : "least to most NPTs";
+
 	return (
 		<Card
 			title="Roster"
-			meta="sorted by current NPT load"
+			meta={`sorted by current NPT load · ${sortLabel}`}
 			action={
 				<span style={{ display: "flex", gap: 6 }}>
+					<SortToggle sortDir={sortDir} onChange={setSortDir} />
 					<Pill kind="ghost">add member</Pill>
 					<Pill kind="ghost">export csv</Pill>
 				</span>
@@ -25,7 +39,7 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 					</tr>
 				</thead>
 				<tbody>
-					{[...TEAM].sort((a, b) => (byPerson[b.id] || 0) - (byPerson[a.id] || 0)).map((person) => {
+					{sortedTeam.map((person) => {
 						const total = byPerson[person.id] || 0;
 						const over = total >= threshold;
 						const under = total <= 1;
@@ -91,3 +105,23 @@ export default function Roster({ TEAM, byPerson, byPC, NPT_CATEGORIES, CATEGORY_
 	);
 }
 
+function SortToggle({ sortDir, onChange }) {
+	return (
+		<div className="sort-toggle" aria-label="Sort roster by NPT load">
+			<button
+				type="button"
+				data-active={sortDir === "desc"}
+				onClick={() => onChange("desc")}
+			>
+				Most
+			</button>
+			<button
+				type="button"
+				data-active={sortDir === "asc"}
+				onClick={() => onChange("asc")}
+			>
+				Least
+			</button>
+		</div>
+	);
+}
